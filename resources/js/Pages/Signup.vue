@@ -62,7 +62,7 @@
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                       </div>
-                      <input id="phone" name="phone" type="text" class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="+1 (555) 000-0000" />
+                      <input id="phone" name="phone" type="text" class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="+880 1*********" />
                     </div>
                   </div>
               </div>
@@ -72,22 +72,32 @@
                   <div>
                     <label for="company" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"> Company Name </label>
                     <div class="relative rounded-xl shadow-sm">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                      </div>
                       <input id="company" name="company" type="text" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="Demo Company" />
                     </div>
                   </div>
                   <div>
                     <label for="industry" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"> Industry </label>
                     <div class="relative rounded-xl shadow-sm">
-                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                       </div>
-                      <select id="industry" name="industry" class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all appearance-none">
-                        <option value="" disabled selected>Select...</option>
-                        <option>Retail & E-commerce</option>
-                        <option>Manufacturing</option>
-                        <option>Logistics & Supply</option>
-                        <option>Other</option>
-                      </select>
+                      <input type="hidden" name="industry" :value="selectedIndustry">
+                      <Dropdown align="left" width="full" fullWidth>
+                        <template #trigger>
+                          <button type="button" class="flex justify-between items-center w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all text-left min-h-[38px]">
+                            <span :class="!selectedIndustry ? 'text-gray-500' : ''">{{ selectedIndustry || 'Select...' }}</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                          </button>
+                        </template>
+                        <template #content="{ close }">
+                          <a href="#" v-for="ind in ['Retail & E-commerce', 'Manufacturing', 'Logistics & Supply', 'Other']" :key="ind" @click.prevent="selectedIndustry = ind; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="selectedIndustry === ind ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                            {{ ind }}
+                          </a>
+                        </template>
+                      </Dropdown>
                     </div>
                   </div>
               </div>
@@ -186,6 +196,9 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import BrandLogo from '../Components/BrandLogo.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
+
+const selectedIndustry = ref('');
 </script>

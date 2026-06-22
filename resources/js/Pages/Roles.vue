@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">User Roles & Team</h1>
-      <button class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm self-start sm:self-auto flex items-center gap-2">
+      <button @click="showAddModal = true" class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm self-start sm:self-auto flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
         Invite User
       </button>
@@ -73,10 +73,55 @@
         </table>
       </div>
     </div>
+
+    <!-- Invite User Modal -->
+    <Modal :show="showAddModal" @close="showAddModal = false" @save="showAddModal = false">
+      <template #title>Invite Team Member</template>
+      <template #body>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+            <input type="email" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="employee@company.com" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Role</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
+                <option disabled selected>Select Role...</option>
+                <option>Super Admin</option>
+                <option>Store Manager</option>
+                <option>Floor Staff</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Location</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
+                <option>All Locations</option>
+                <option>Central Distribution Hub</option>
+                <option>West Coast Storage</option>
+                <option>East Coast Fulfillment</option>
+              </select>
+            </div>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Permissions Preview</h4>
+            <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1 list-disc list-inside">
+              <li>Select a role above to view granted permissions.</li>
+              <li>Users will receive an email invitation to set their password.</li>
+            </ul>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import Modal from '../Components/Modal.vue';
+
+const showAddModal = ref(false);
+
 const users = [
     { name: 'Demo Admin', email: 'admin@democompany.com', initials: 'DA', role: 'Super Admin', location: 'All Locations' },
     { name: 'Sarah Jenkins', email: 'sarah@democompany.com', initials: 'SJ', role: 'Store Manager', location: 'West Coast Storage' },

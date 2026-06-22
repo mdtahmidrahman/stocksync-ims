@@ -2,10 +2,13 @@ import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
 import AppLayout from './Layouts/AppLayout.vue';
+import PublicLayout from './Layouts/PublicLayout.vue';
 import '../css/app.css';
 
 // Views
 import Landing from './Pages/Landing.vue';
+import Features from './Pages/Features.vue';
+import Pricing from './Pages/Pricing.vue';
 import Login from './Pages/Login.vue';
 import Signup from './Pages/Signup.vue';
 import Dashboard from './Pages/Dashboard.vue';
@@ -24,8 +27,19 @@ import Support from './Pages/Support.vue';
 import Sales from './Pages/Sales.vue';
 import Customers from './Pages/Customers.vue';
 
+import Dropdown from './Components/Dropdown.vue';
+import Tooltip from './Components/Tooltip.vue';
+
 const routes = [
-    { path: '/', component: Landing },
+    { 
+        path: '/', 
+        component: PublicLayout,
+        children: [
+            { path: '', component: Landing },
+            { path: 'features', component: Features },
+            { path: 'pricing', component: Pricing },
+        ]
+    },
     { path: '/login', component: Login },
     { path: '/signup', component: Signup },
     { 
@@ -58,4 +72,9 @@ const router = createRouter({
 
 const app = createApp(App);
 app.use(router);
+
+// Global Component Registration
+app.component('Dropdown', Dropdown);
+app.component('Tooltip', Tooltip);
+
 app.mount('#app');

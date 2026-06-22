@@ -3,8 +3,8 @@
     <!-- Command Header -->
     <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome back, Demo Name 👋</h1>
-        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">Here's your inventory command center for today, October 24, 2024.</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome back, Demo Name!</h1>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">Here's your inventory command center for today, June 22, 2026.</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
         <router-link to="/sales" class="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm flex items-center gap-2">
@@ -90,13 +90,22 @@
       <div class="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-lg font-bold text-gray-900 dark:text-white">Sales Volume vs. Restock</h2>
-          <select class="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none">
-            <option>Last 7 Days</option>
-            <option>Last 30 Days</option>
-          </select>
+          <Dropdown align="right" width="48">
+            <template #trigger>
+              <button class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+                {{ chartFilter }}
+                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+            </template>
+            <template #content="{ close }">
+              <a href="#" @click.prevent="chartFilter = 'Last 7 Days'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="chartFilter === 'Last 7 Days' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">Last 7 Days</a>
+              <a href="#" @click.prevent="chartFilter = 'Last 30 Days'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="chartFilter === 'Last 30 Days' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">Last 30 Days</a>
+              <a href="#" @click.prevent="chartFilter = 'This Year'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-t border-gray-100 dark:border-gray-800" :class="chartFilter === 'This Year' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">This Year</a>
+            </template>
+          </Dropdown>
         </div>
         
-        <div class="flex-1 flex items-end gap-2 sm:gap-4 h-64 mt-4 relative">
+        <div class="flex h-64 items-end gap-2 sm:gap-4 mt-4 relative">
           <!-- Horizontal Grid Lines -->
           <div class="absolute inset-0 flex flex-col justify-between z-0">
             <div class="border-b border-gray-100 dark:border-gray-800 w-full h-0"></div>
@@ -107,12 +116,22 @@
           </div>
           
           <!-- Bars -->
-          <div class="relative z-10 flex-1 flex flex-col justify-end items-center group" v-for="(day, i) in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="i">
-            <div class="w-full max-w-[40px] flex items-end gap-1 mb-2">
-              <div class="w-1/2 bg-primary-500 hover:bg-primary-400 rounded-t-sm transition-all" :style="`height: ${Math.floor(Math.random() * 60 + 20)}%`"></div>
-              <div class="w-1/2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-t-sm transition-all" :style="`height: ${Math.floor(Math.random() * 40 + 10)}%`"></div>
+          <div class="relative z-10 flex-1 h-full flex flex-col justify-end items-center group" v-for="day in salesRestockChart" :key="day.label">
+            <div class="w-full max-w-[40px] flex-1 flex items-end gap-1 mb-2">
+              <Tooltip :text="`${day.itemsSold} items sold`" position="top" class="w-1/2">
+                <div
+                  class="w-full bg-primary-500 hover:bg-primary-400 rounded-t-sm transition-all"
+                  :style="{ height: `${day.soldHeight}px` }"
+                ></div>
+              </Tooltip>
+              <Tooltip :text="`${day.itemsRestocked} items restocked`" position="top" class="w-1/2">
+                <div
+                  class="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-t-sm transition-all"
+                  :style="{ height: `${day.restockedHeight}px` }"
+                ></div>
+              </Tooltip>
             </div>
-            <span class="text-xs font-medium text-gray-500">{{ day }}</span>
+            <span class="text-xs font-medium text-gray-500">{{ day.label }}</span>
           </div>
         </div>
         
@@ -221,9 +240,17 @@
       <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-lg font-bold text-gray-900 dark:text-white">Recent Activity</h2>
-          <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
-          </button>
+          <Dropdown align="right" width="48">
+            <template #trigger>
+              <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+              </button>
+            </template>
+            <template #content="{ close }">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click.prevent="close">View All Activity</a>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click.prevent="close">Export Log</a>
+            </template>
+          </Dropdown>
         </div>
         
         <div class="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-6">
@@ -259,4 +286,29 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const chartFilter = ref('Last 7 Days');
+
+const weeklySalesRestock = [
+  { label: 'Mon', itemsSold: 84, itemsRestocked: 34 },
+  { label: 'Tue', itemsSold: 112, itemsRestocked: 46 },
+  { label: 'Wed', itemsSold: 76, itemsRestocked: 28 },
+  { label: 'Thu', itemsSold: 138, itemsRestocked: 62 },
+  { label: 'Fri', itemsSold: 156, itemsRestocked: 74 },
+  { label: 'Sat', itemsSold: 121, itemsRestocked: 51 },
+  { label: 'Sun', itemsSold: 98, itemsRestocked: 39 },
+];
+
+const maxChartValue = Math.max(
+  ...weeklySalesRestock.flatMap((day) => [day.itemsSold, day.itemsRestocked])
+);
+
+const maxBarHeight = 208;
+
+const salesRestockChart = weeklySalesRestock.map((day) => ({
+  ...day,
+  soldHeight: Math.round((day.itemsSold / maxChartValue) * maxBarHeight),
+  restockedHeight: Math.round((day.itemsRestocked / maxChartValue) * maxBarHeight),
+}));
 </script>

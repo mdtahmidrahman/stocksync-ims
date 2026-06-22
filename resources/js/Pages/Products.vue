@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Products</h1>
       <div class="flex items-center gap-3 self-start sm:self-auto">
-        <button class="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 transition-colors shadow-sm flex items-center gap-2">
+        <button @click="showBulkUploadModal = true" class="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 transition-colors shadow-sm flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
           Bulk Upload
         </button>
@@ -70,7 +70,7 @@
               </td>
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-2">
-                  <button class="text-gray-400 hover:text-blue-600 transition-colors" title="Print Barcode">
+                  <button @click="showBarcodeModal = true" class="text-gray-400 hover:text-blue-600 transition-colors" title="Print Barcode">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                   </button>
                   <button @click="showEditModal = true" class="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 text-sm font-medium">Edit</button>
@@ -137,6 +137,15 @@
           </div>
         </div>
       </template>
+      <template #footer>
+        <div class="flex justify-between w-full items-center">
+          <button @click="showAddModal = false; showCustomProductModal = true" class="text-sm font-semibold text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">Add Customized Product</button>
+          <div class="flex gap-2">
+            <button @click="showAddModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
+            <button @click="showAddModal = false" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save Product</button>
+          </div>
+        </div>
+      </template>
     </Modal>
 
     <!-- Edit Product Modal -->
@@ -161,6 +170,111 @@
         </div>
       </template>
     </Modal>
+
+    <!-- Bulk Upload Modal -->
+    <Modal :show="showBulkUploadModal" @close="showBulkUploadModal = false" @save="showBulkUploadModal = false">
+      <template #title>Bulk Upload Products</template>
+      <template #body>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-gray-500 dark:text-gray-400">Upload CSV or Excel file</span>
+            <a href="#" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">Download Template</a>
+          </div>
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+            <div class="w-16 h-16 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center mb-4">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            </div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Click to upload or drag and drop</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">CSV, XLS, or XLSX (MAX. 10MB)</p>
+          </div>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Custom Product Modal -->
+    <Modal :show="showCustomProductModal" @close="showCustomProductModal = false" @save="showCustomProductModal = false">
+      <template #title>Add Customized Product</template>
+      <template #body>
+        <div class="space-y-4">
+          <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-blue-800 dark:text-blue-300 flex gap-3">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p>Custom products are unique variants made to order. They require a base product and defined customization details.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Product</label>
+            <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
+              <option disabled selected>Select a base product...</option>
+              <option>Wireless Headphones (WH-1002)</option>
+              <option>Smart Watch (SW-2001)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customization Details</label>
+            <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" rows="3" placeholder="e.g. Matte black finish, gold engraving on side plate."></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Price ($)</label>
+              <input type="number" value="129.99" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 sm:text-sm cursor-not-allowed" disabled />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customization Surcharge ($)</label>
+              <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="45.00" />
+            </div>
+          </div>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Barcode Preview Modal -->
+    <Modal :show="showBarcodeModal" @close="showBarcodeModal = false" @save="showBarcodeModal = false">
+      <template #title>Print Barcode</template>
+      <template #body>
+        <div class="flex flex-col items-center justify-center p-6 space-y-6">
+          <div class="text-center">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Wireless Headphones</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">WH-1002</p>
+          </div>
+          <div class="bg-white p-6 border border-gray-200 rounded-lg shadow-sm">
+            <!-- Pure CSS Mock Barcode -->
+            <div class="h-20 w-64 flex bg-white">
+              <div class="h-full w-2 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-4 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-3 bg-black mx-px"></div>
+              <div class="h-full w-2 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-4 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-3 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-2 bg-black mx-px"></div>
+              <div class="h-full w-5 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-2 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-3 bg-black mx-px"></div>
+              <div class="h-full w-2 bg-black mx-px"></div>
+              <div class="h-full w-1 bg-black mx-px"></div>
+              <div class="h-full w-4 bg-black mx-px"></div>
+            </div>
+            <div class="text-center font-mono text-sm tracking-[0.2em] mt-2 text-black">
+              WH-1002-884
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <button @click="showBarcodeModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Close</button>
+          <button @click="showBarcodeModal = false" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Send to Thermal Printer
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -170,4 +284,7 @@ import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
+const showBulkUploadModal = ref(false);
+const showCustomProductModal = ref(false);
+const showBarcodeModal = ref(false);
 </script>
