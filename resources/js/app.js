@@ -26,6 +26,7 @@ import Roles from './Pages/Roles.vue';
 import Support from './Pages/Support.vue';
 import Sales from './Pages/Sales.vue';
 import Customers from './Pages/Customers.vue';
+import AuditLog from './Pages/AuditLog.vue';
 
 import Dropdown from './Components/Dropdown.vue';
 import Tooltip from './Components/Tooltip.vue';
@@ -61,6 +62,7 @@ const routes = [
             { path: '/support', component: Support },
             { path: '/sales', component: Sales },
             { path: '/customers', component: Customers },
+            { path: '/audit-log', component: AuditLog },
         ]
     }
 ];

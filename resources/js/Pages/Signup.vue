@@ -10,6 +10,15 @@
         <div>
           <BrandLogo size="xl" theme="dark" class="hidden dark:flex" />
           <BrandLogo size="xl" class="dark:hidden" />
+          <!-- Demo Role Buttons -->
+          <div class="pt-6">
+            <p class="text-sm text-center text-gray-500 dark:text-gray-400 mb-4">Demo: Quick Login as Role</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" @click="demoLogin('admin')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">Admin</button>
+              <button type="button" @click="demoLogin('manager')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">Manager</button>
+              <button type="button" @click="demoLogin('staff')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">Staff</button>
+            </div>
+          </div>
           <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Create your account</h2>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Already have an account?

@@ -14,12 +14,18 @@
           <form class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Category</label>
-              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                <option>System Bug</option>
-                <option>Inventory Discrepancy</option>
-                <option>Billing Issue</option>
-                <option>Other</option>
-              </select>
+              <input type="hidden" name="category" :value="issueCategory">
+              <Dropdown align="left" width="full" fullWidth>
+                <template #trigger>
+                  <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                    {{ issueCategory }}
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                </template>
+                <template #content="{ close }">
+                  <a href="#" v-for="cat in ['System Bug', 'Inventory Discrepancy', 'Billing Issue', 'Other']" :key="cat" @click.prevent="issueCategory = cat; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="issueCategory === cat ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat }}</a>
+                </template>
+              </Dropdown>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
@@ -79,6 +85,10 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const issueCategory = ref('System Bug');
+
 const faqs = [
     { q: 'How do I transfer stock between warehouses?', a: 'Navigate to the Inventory page, click "Sync Stock", and select "Transfer" as the operation type. You will need to select the Source and Destination warehouse before confirming the quantity.' },
     { q: 'Can I export reports to PDF?', a: 'Currently, the system exports to CSV format for maximum compatibility with spreadsheet software like Excel. PDF exporting is planned for the Q3 system update.' },

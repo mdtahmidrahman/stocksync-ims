@@ -3,11 +3,17 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Reports & Analytics</h1>
       <div class="flex items-center gap-2">
-        <select class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none">
-          <option>Last 30 Days</option>
-          <option>This Month</option>
-          <option>This Year</option>
-        </select>
+        <Dropdown align="right" width="48">
+          <template #trigger>
+            <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+              {{ dateRange }}
+              <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+          </template>
+          <template #content="{ close }">
+            <a href="#" v-for="range in ['Last 30 Days', 'This Month', 'This Year']" :key="range" @click.prevent="dateRange = range; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="dateRange === range ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ range }}</a>
+          </template>
+        </Dropdown>
         <button class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm">
           Export Report
         </button>
@@ -118,4 +124,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const dateRange = ref('Last 30 Days');
 </script>

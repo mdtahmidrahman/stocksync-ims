@@ -16,12 +16,17 @@
           <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
-            <select class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none">
-              <option>All Roles</option>
-              <option>Admin</option>
-              <option>Manager</option>
-              <option>Staff</option>
-            </select>
+            <Dropdown align="right" width="48">
+              <template #trigger>
+                <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+                  {{ filterRole }}
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content="{ close }">
+                <a href="#" v-for="role in ['All Roles', 'Admin', 'Manager', 'Staff']" :key="role" @click.prevent="filterRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+              </template>
+            </Dropdown>
         </div>
       </div>
 
@@ -86,21 +91,31 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Role</label>
-              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                <option disabled selected>Select Role...</option>
-                <option>Super Admin</option>
-                <option>Store Manager</option>
-                <option>Floor Staff</option>
-              </select>
+              <Dropdown align="left" width="full" fullWidth>
+                <template #trigger>
+                  <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                    <span :class="!newRole ? 'text-gray-500' : ''">{{ newRole || 'Select Role...' }}</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                </template>
+                <template #content="{ close }">
+                  <a href="#" v-for="role in ['Super Admin', 'Store Manager', 'Floor Staff']" :key="role" @click.prevent="newRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+                </template>
+              </Dropdown>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Location</label>
-              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                <option>All Locations</option>
-                <option>Central Distribution Hub</option>
-                <option>West Coast Storage</option>
-                <option>East Coast Fulfillment</option>
-              </select>
+              <Dropdown align="left" width="full" fullWidth>
+                <template #trigger>
+                  <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                    {{ newLocation }}
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                </template>
+                <template #content="{ close }">
+                  <a href="#" v-for="loc in ['All Locations', 'Central Distribution Hub', 'West Coast Storage', 'East Coast Fulfillment']" :key="loc" @click.prevent="newLocation = loc; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newLocation === loc ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ loc }}</a>
+                </template>
+              </Dropdown>
             </div>
           </div>
           <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
@@ -121,6 +136,9 @@ import { ref } from 'vue';
 import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);
+const filterRole = ref('All Roles');
+const newRole = ref('');
+const newLocation = ref('All Locations');
 
 const users = [
     { name: 'Demo Admin', email: 'admin@democompany.com', initials: 'DA', role: 'Super Admin', location: 'All Locations' },

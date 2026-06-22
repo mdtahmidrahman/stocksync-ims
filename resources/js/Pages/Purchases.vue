@@ -16,12 +16,17 @@
           <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
-            <select class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none flex-1 sm:flex-none">
-              <option>All Statuses</option>
-              <option>Received</option>
-              <option>Pending</option>
-              <option>Ordered</option>
-            </select>
+            <Dropdown align="right" width="48">
+              <template #trigger>
+                <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+                  {{ filterStatus }}
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content="{ close }">
+                <a href="#" v-for="status in ['All Statuses', 'Received', 'Pending', 'Ordered']" :key="status" @click.prevent="filterStatus = status; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterStatus === status ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ status }}</a>
+              </template>
+            </Dropdown>
             <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex-1 sm:flex-none">Export</button>
         </div>
       </div>
@@ -97,11 +102,17 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Supplier</label>
-            <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-              <option>Demo Company 1</option>
-              <option>Demo Company 2</option>
-              <option>Demo Company 3</option>
-            </select>
+            <Dropdown align="left" width="full" fullWidth>
+              <template #trigger>
+                <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                  {{ newSupplier }}
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content="{ close }">
+                <a href="#" v-for="sup in ['Demo Company 1', 'Demo Company 2', 'Demo Company 3']" :key="sup" @click.prevent="newSupplier = sup; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newSupplier === sup ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ sup }}</a>
+              </template>
+            </Dropdown>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expected Delivery Date</label>
@@ -167,4 +178,6 @@ import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);
 const showReceiveModal = ref(false);
+const filterStatus = ref('All Statuses');
+const newSupplier = ref('Demo Company 1');
 </script>

@@ -11,11 +11,17 @@
       <!-- Toolbar -->
       <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
         <div class="flex gap-2 w-full sm:w-auto">
-            <select class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none">
-              <option>All Types</option>
-              <option>Incoming (Sales)</option>
-              <option>Outgoing (Purchases)</option>
-            </select>
+            <Dropdown align="left" width="48">
+              <template #trigger>
+                <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+                  {{ paymentType }}
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content="{ close }">
+                <a href="#" v-for="type in ['All Types', 'Incoming (Sales)', 'Outgoing (Purchases)']" :key="type" @click.prevent="paymentType = type; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="paymentType === type ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ type }}</a>
+              </template>
+            </Dropdown>
         </div>
         <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -74,4 +80,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const paymentType = ref('All Types');
 </script>

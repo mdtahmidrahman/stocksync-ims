@@ -60,19 +60,31 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Currency</label>
-                <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                  <option selected>USD ($)</option>
-                  <option>EUR (€)</option>
-                  <option>GBP (£)</option>
-                </select>
+                <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      {{ defaultCurrency }}
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" v-for="currency in ['USD ($)', 'EUR (€)', 'GBP (£)']" :key="currency" @click.prevent="defaultCurrency = currency; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="defaultCurrency === currency ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ currency }}</a>
+                  </template>
+                </Dropdown>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timezone</label>
-                <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                  <option selected>America/New_York</option>
-                  <option>Europe/London</option>
-                  <option>Asia/Tokyo</option>
-                </select>
+                <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      {{ timezone }}
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" v-for="tz in ['America/New_York', 'Europe/London', 'Asia/Tokyo']" :key="tz" @click.prevent="timezone = tz; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="timezone === tz ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ tz }}</a>
+                  </template>
+                </Dropdown>
               </div>
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Address</label>
@@ -128,4 +140,6 @@
 import { ref } from 'vue';
 
 const activeTab = ref('general');
+const defaultCurrency = ref('USD ($)');
+const timezone = ref('America/New_York');
 </script>
