@@ -2,6 +2,7 @@ import { ref, watch, onMounted } from 'vue';
 
 const isDark = ref(false);
 const isMobileMenuOpen = ref(false);
+const isSidebarCollapsed = ref(false);
 const currentUserRole = ref('admin'); // admin, manager, staff
 
 export function useAppState() {
@@ -21,6 +22,11 @@ export function useAppState() {
             if (savedRole) {
                 currentUserRole.value = savedRole;
             }
+
+            const savedSidebar = localStorage.getItem('sidebarCollapsed');
+            if (savedSidebar === 'true') {
+                isSidebarCollapsed.value = true;
+            }
         }
     });
 
@@ -39,6 +45,13 @@ export function useAppState() {
         isMobileMenuOpen.value = !isMobileMenuOpen.value;
     };
 
+    const toggleSidebar = () => {
+        isSidebarCollapsed.value = !isSidebarCollapsed.value;
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value.toString());
+        }
+    };
+
     const loginAs = (role) => {
         currentUserRole.value = role;
         if (typeof window !== 'undefined') {
@@ -53,9 +66,11 @@ export function useAppState() {
     return {
         isDark,
         isMobileMenuOpen,
+        isSidebarCollapsed,
         currentUserRole,
         toggleDarkMode,
         toggleMobileMenu,
+        toggleSidebar,
         closeMobileMenu,
         loginAs
     };

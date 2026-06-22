@@ -212,6 +212,7 @@
               <tr>
                 <th class="p-4 font-semibold">Product</th>
                 <th class="p-4 font-semibold text-right">Units Sold</th>
+                <th class="p-4 font-semibold text-center">7-Day Trend</th>
                 <th class="p-4 font-semibold text-right">Revenue</th>
               </tr>
             </thead>
@@ -229,6 +230,18 @@
                   </div>
                 </td>
                 <td class="p-4 text-right font-medium text-gray-900 dark:text-white">{{ 245 - (i * 20) }}</td>
+                <td class="p-4">
+                  <div class="flex items-end justify-center gap-1 h-8">
+                    <!-- Dynamic heights based on index to mock real data variations -->
+                    <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${20 + i * 5}%` }"></div>
+                    <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${40 - i * 5}%` }"></div>
+                    <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${30 + i * 10}%` }"></div>
+                    <div class="w-1.5 bg-primary-300 dark:bg-primary-800/50 rounded-t-sm" :style="{ height: `${60 - i * 5}%` }"></div>
+                    <div class="w-1.5 bg-primary-400 dark:bg-primary-700/50 rounded-t-sm" :style="{ height: `${50 + i * 5}%` }"></div>
+                    <div class="w-1.5 bg-primary-500 dark:bg-primary-600/50 rounded-t-sm" :style="{ height: `${80 - i * 10}%` }"></div>
+                    <div class="w-1.5 bg-primary-600 dark:bg-primary-500 rounded-t-sm" :style="{ height: `${100 - i * 5}%` }"></div>
+                  </div>
+                </td>
                 <td class="p-4 text-right font-medium text-green-600 dark:text-green-400">${{ (245 - (i * 20)) * 120 }}.00</td>
               </tr>
             </tbody>

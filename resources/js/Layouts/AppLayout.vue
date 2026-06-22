@@ -2,7 +2,10 @@
   <div class="flex min-h-screen bg-gray-50 dark:bg-black transition-colors">
     <Sidebar />
     
-    <div class="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
+    <div :class="[
+      'flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ease-in-out',
+      isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
+    ]">
       <!-- Top header -->
       <header class="h-16 px-4 md:px-8 flex items-center justify-between md:justify-end bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shrink-0 transition-colors">
          <!-- Mobile Hamburger -->
@@ -62,5 +65,5 @@ import Sidebar from '../Components/Sidebar.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 import { useAppState } from '../Composables/useAppState';
 
-const { toggleMobileMenu } = useAppState();
+const { toggleMobileMenu, isSidebarCollapsed } = useAppState();
 </script>

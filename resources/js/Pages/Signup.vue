@@ -206,8 +206,17 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import BrandLogo from '../Components/BrandLogo.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
+import { useAppState } from '../Composables/useAppState';
 
+const router = useRouter();
+const { loginAs } = useAppState();
 const selectedIndustry = ref('');
+
+const demoLogin = (role) => {
+    loginAs(role);
+    router.push('/dashboard');
+};
 </script>

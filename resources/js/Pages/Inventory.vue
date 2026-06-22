@@ -34,6 +34,7 @@
               <th class="p-4 font-semibold whitespace-nowrap text-right">In Stock</th>
               <th class="p-4 font-semibold whitespace-nowrap text-right">Reserved</th>
               <th class="p-4 font-semibold whitespace-nowrap text-right">Available</th>
+              <th class="p-4 font-semibold whitespace-nowrap text-center">Days Until Stockout</th>
               <th class="p-4 font-semibold whitespace-nowrap text-center">Status</th>
             </tr>
           </thead>
@@ -51,6 +52,11 @@
               <td class="p-4 text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ 100 - i * 15 }}</td>
               <td class="p-4 text-right text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ i * 5 }}</td>
               <td class="p-4 text-right font-bold text-primary-600 dark:text-primary-400 whitespace-nowrap">{{ 100 - i * 20 }}</td>
+              <td class="p-4 text-center">
+                <span v-if="i === 1" class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded">3 Days</span>
+                <span v-else-if="i === 2" class="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded">12 Days</span>
+                <span v-else class="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded">Safe (30+ Days)</span>
+              </td>
               <td class="p-4 text-center whitespace-nowrap">
                 <span v-if="i === 1" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
                   Low Stock
