@@ -27,6 +27,7 @@ import Support from './Pages/Support.vue';
 import Sales from './Pages/Sales.vue';
 import Customers from './Pages/Customers.vue';
 import AuditLog from './Pages/AuditLog.vue';
+import Error404 from './Pages/Error404.vue';
 
 import Dropdown from './Components/Dropdown.vue';
 import Tooltip from './Components/Tooltip.vue';
@@ -65,7 +66,8 @@ const routes = [
             { path: '/customers', component: Customers },
             { path: '/audit-log', component: AuditLog, meta: { roles: ['admin', 'manager'] } },
         ]
-    }
+    },
+    { path: '/:pathMatch(.*)*', component: Error404 }
 ];
 
 const router = createRouter({
