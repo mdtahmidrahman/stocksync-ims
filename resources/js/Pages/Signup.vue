@@ -224,7 +224,7 @@ const handleSignup = async () => {
     error.value = '';
     isSubmitting.value = true;
     try {
-        await signup(name.value, email.value, password.value, password.value, 'staff');
+        await signup(name.value, email.value, password.value, password.value, company.value);
         router.push('/dashboard');
     } catch (err) {
         console.error(err);

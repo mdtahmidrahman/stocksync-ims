@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,34 +14,42 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Super Admin
-        User::updateOrCreate(
-            ['email' => 'admin@stocksync.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-            ]
-        );
+        $company = Company::create([
+            'name' => 'StockSync Demo HQ',
+        ]);
 
-        // Store Manager
-        User::updateOrCreate(
-            ['email' => 'manager@stocksync.com'],
-            [
-                'name' => 'Store Manager',
-                'password' => Hash::make('password'),
-                'role' => 'manager',
-            ]
-        );
+        // 1. Platform Owner (Super Admin) - No company tied
+        User::create([
+            'name' => 'Platform Owner',
+            'email' => 'super@stocksync.com',
+            'password' => Hash::make('password'),
+            'role' => 'super_admin',
+            'company_id' => null,
+        ]);
 
-        // Floor Staff
-        User::updateOrCreate(
-            ['email' => 'staff@stocksync.com'],
-            [
-                'name' => 'Floor Staff',
-                'password' => Hash::make('password'),
-                'role' => 'staff',
-            ]
-        );
+        // 2. Company Admin
+        User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@stocksync.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'company_id' => $company->id,
+        ]);
+
+        User::create([
+            'name' => 'Manager User',
+            'email' => 'manager@stocksync.com',
+            'password' => Hash::make('password'),
+            'role' => 'manager',
+            'company_id' => $company->id,
+        ]);
+
+        User::create([
+            'name' => 'Staff User',
+            'email' => 'staff@stocksync.com',
+            'password' => Hash::make('password'),
+            'role' => 'staff',
+            'company_id' => $company->id,
+        ]);
     }
 }

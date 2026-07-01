@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use App\Models\Company;
 
 class RegisteredUserController extends Controller
 {
@@ -34,15 +36,26 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['sometimes', 'string', 'in:admin,manager,staff'],
+            'company_name' => ['required', 'string', 'max:255'],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'staff',
-        ]);
+        $user = DB::transaction(function () use ($request) {
+            // 1. Create the new Company
+            $company = Company::create([
+                'name' => $request->company_name,
+            ]);
+
+            // 2. Create the Admin user for this company
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'admin', // The creator of the company is always an admin
+                'company_id' => $company->id,
+            ]);
+
+            return $user;
+        });
 
         event(new Registered($user));
 
