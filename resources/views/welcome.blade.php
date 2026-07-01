@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Inventory Management System</title>
+        <title>StockSync IMS</title>
         <link rel="icon" type="image/png" href="/images/logo.png">
         
         <!-- Fonts -->
