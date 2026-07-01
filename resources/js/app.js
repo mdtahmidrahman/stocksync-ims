@@ -32,6 +32,8 @@ import Error404 from './Pages/Error404.vue';
 import Dropdown from './Components/Dropdown.vue';
 import Tooltip from './Components/Tooltip.vue';
 
+import SuperAdminDashboard from './Pages/SuperAdminDashboard.vue';
+
 const routes = [
     { 
         path: '/', 
@@ -49,11 +51,12 @@ const routes = [
         component: AppLayout,
         meta: { requiresAuth: true },
         children: [
-            { path: '/dashboard', component: Dashboard },
+            { path: '/dashboard', component: Dashboard, meta: { roles: ['admin', 'manager', 'staff'] } },
+            { path: '/platform', component: SuperAdminDashboard, meta: { roles: ['super_admin'] } },
             { path: '/products', component: Products, meta: { roles: ['admin', 'manager'] } },
             { path: '/suppliers', component: Suppliers, meta: { roles: ['admin', 'manager'] } },
-            { path: '/orders', component: Orders },
-            { path: '/inventory', component: Inventory },
+            { path: '/orders', component: Orders, meta: { roles: ['admin', 'manager', 'staff'] } },
+            { path: '/inventory', component: Inventory, meta: { roles: ['admin', 'manager', 'staff'] } },
             { path: '/purchases', component: Purchases, meta: { roles: ['admin', 'manager'] } },
             { path: '/reports', component: Reports, meta: { roles: ['admin', 'manager'] } },
             { path: '/settings', component: Settings, meta: { roles: ['admin'] } },
@@ -61,9 +64,9 @@ const routes = [
             { path: '/warehouses', component: Warehouses, meta: { roles: ['admin', 'manager'] } },
             { path: '/payments', component: Payments, meta: { roles: ['admin', 'manager'] } },
             { path: '/roles', component: Roles, meta: { roles: ['admin'] } },
-            { path: '/support', component: Support },
-            { path: '/sales', component: Sales },
-            { path: '/customers', component: Customers },
+            { path: '/support', component: Support, meta: { roles: ['admin', 'manager', 'staff', 'super_admin'] } },
+            { path: '/sales', component: Sales, meta: { roles: ['admin', 'manager', 'staff'] } },
+            { path: '/customers', component: Customers, meta: { roles: ['admin', 'manager', 'staff'] } },
             { path: '/audit-log', component: AuditLog, meta: { roles: ['admin', 'manager'] } },
         ]
     },
@@ -93,10 +96,10 @@ router.beforeEach(async (to, from, next) => {
     if (requiresAuth && !isAuthenticated.value) {
         next('/login');
     } else if (guestOnly && isAuthenticated.value) {
-        next('/dashboard');
+        next(currentUserRole.value === 'super_admin' ? '/platform' : '/dashboard');
     } else if (requiresAuth && to.meta.roles && !to.meta.roles.includes(currentUserRole.value)) {
-        // Access forbidden, fallback to dashboard
-        next('/dashboard');
+        // Access forbidden, fallback to their respective default home
+        next(currentUserRole.value === 'super_admin' ? '/platform' : '/dashboard');
     } else {
         next();
     }

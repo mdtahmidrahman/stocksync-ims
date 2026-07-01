@@ -102,8 +102,8 @@ export function useAppState() {
         currentUserRole.value = 'staff';
     };
 
-    // Register a new user
-    const signup = async (name, email, password, password_confirmation, role = 'staff') => {
+    // Register a new user and company
+    const signup = async (name, email, password, password_confirmation, companyName) => {
         await axios.get('/sanctum/csrf-cookie');
 
         await axios.post('/register', {
@@ -111,7 +111,7 @@ export function useAppState() {
             email,
             password,
             password_confirmation,
-            role
+            company_name: companyName
         });
 
         await checkAuth();

@@ -42,31 +42,32 @@
           <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-800">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
           </div>
-          <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+          <button @click="deleteWarehouse(wh.id)" class="text-gray-400 hover:text-red-600 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
           </button>
         </div>
         
         <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ wh.name }}</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4 flex-1">{{ wh.address }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4 flex-1">{{ wh.location }}</p>
         
         <div class="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-800">
           <div class="flex justify-between text-sm">
-            <span class="text-gray-500 dark:text-gray-400">Manager:</span>
-            <span class="font-medium text-gray-900 dark:text-white">{{ wh.manager }}</span>
+            <span class="text-gray-500 dark:text-gray-400">Status:</span>
+            <span class="font-medium text-green-600 dark:text-green-400" v-if="wh.is_active">Active</span>
+            <span class="font-medium text-red-600 dark:text-red-400" v-else>Inactive</span>
           </div>
           <div class="flex justify-between text-sm">
             <span class="text-gray-500 dark:text-gray-400">Total Items:</span>
-            <span class="font-medium text-gray-900 dark:text-white">{{ wh.items.toLocaleString() }}</span>
+            <span class="font-medium text-gray-900 dark:text-white">-</span>
           </div>
           
           <div class="pt-2">
             <div class="flex justify-between text-xs mb-1">
               <span class="font-medium text-gray-700 dark:text-gray-300">Capacity Used</span>
-              <span class="font-medium text-gray-700 dark:text-gray-300">{{ wh.capacity }}%</span>
+              <span class="font-medium text-gray-700 dark:text-gray-300">0%</span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-              <div class="bg-primary-500 h-1.5 rounded-full" :style="{ width: wh.capacity + '%' }"></div>
+              <div class="bg-primary-500 h-1.5 rounded-full" style="width: 0%"></div>
             </div>
           </div>
         </div>
@@ -194,33 +195,24 @@
     </div>
 
     <!-- Add Warehouse Modal -->
-    <Modal :show="showAddModal" @close="showAddModal = false" @save="showAddModal = false">
+    <Modal :show="showAddModal" @close="showAddModal = false" @save="saveWarehouse">
       <template #title>Add New Warehouse</template>
       <template #body>
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Warehouse Name</label>
-            <input type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Northeast Distribution Center" />
+            <input v-model="newWarehouse.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Northeast Distribution Center" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address / Location</label>
-            <input type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="123 Industrial Parkway, Suite A" />
+            <input v-model="newWarehouse.location" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="123 Industrial Parkway, Suite A" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned Manager</label>
-              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                <option disabled selected>Select Manager...</option>
-                <option>Michael Scott</option>
-                <option>Sarah Jenkins</option>
-                <option>David Miller</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Capacity (Items)</label>
-              <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="50000" />
-            </div>
-          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <button @click="showAddModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
+          <button @click="saveWarehouse" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save</button>
         </div>
       </template>
     </Modal>
@@ -278,16 +270,50 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);
 const showTransferModal = ref(false);
 const activeTab = ref('locations');
 
-const warehouses = [
-    { name: 'Central Distribution Hub', address: '1200 Logistics Blvd, Chicago, IL 60607', manager: 'Michael Scott', items: 45200, capacity: 82 },
-    { name: 'West Coast Storage', address: '450 Industrial Way, San Jose, CA 95112', manager: 'Sarah Jenkins', items: 18500, capacity: 45 },
-    { name: 'East Coast Fulfillment', address: '780 Port Road, Newark, NJ 07102', manager: 'David Miller', items: 28900, capacity: 68 }
-];
+const warehouses = ref([]);
+const newWarehouse = ref({ name: '', location: '', is_active: true });
+
+const fetchWarehouses = async () => {
+    try {
+        const response = await axios.get('/api/warehouses');
+        warehouses.value = response.data;
+    } catch (e) {
+        console.error('Failed to fetch warehouses:', e);
+    }
+};
+
+const saveWarehouse = async () => {
+    if (!newWarehouse.value.name || !newWarehouse.value.location) return;
+    try {
+        await axios.post('/api/warehouses', newWarehouse.value);
+        showAddModal.value = false;
+        newWarehouse.value = { name: '', location: '', is_active: true };
+        fetchWarehouses();
+    } catch (e) {
+        console.error('Failed to save warehouse:', e);
+    }
+};
+
+const deleteWarehouse = async (id) => {
+    if (confirm('Are you sure you want to delete this warehouse?')) {
+        try {
+            await axios.delete(`/api/warehouses/${id}`);
+            fetchWarehouses();
+        } catch (e) {
+            console.error('Failed to delete warehouse:', e);
+        }
+    }
+};
+
+onMounted(() => {
+    fetchWarehouses();
+});
 </script>

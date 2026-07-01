@@ -40,19 +40,19 @@
               <td class="p-4">
                 <div class="font-medium text-gray-900 dark:text-white">{{ cat.name }}</div>
               </td>
-              <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ cat.desc }}</td>
+              <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ cat.description }}</td>
               <td class="p-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
                   Active
                 </span>
               </td>
-              <td class="p-4 text-sm font-medium text-gray-900 dark:text-white">{{ cat.count }} items</td>
+              <td class="p-4 text-sm font-medium text-gray-900 dark:text-white">-</td>
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-3">
                   <button @click="showEditModal = true" class="text-gray-400 hover:text-blue-600 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                   </button>
-                  <button class="text-gray-400 hover:text-red-600 transition-colors">
+                  <button @click="deleteCategory(cat.id)" class="text-gray-400 hover:text-red-600 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                   </button>
                 </div>
@@ -78,17 +78,17 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category Name *</label>
-            <input type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Disposables" />
+            <input v-model="newCategory.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Disposables" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Brief description of the category..."></textarea>
+            <textarea v-model="newCategory.description" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Brief description of the category..."></textarea>
           </div>
         </div>
       </template>
       <template #footer>
         <button @click="showAddModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors">Cancel</button>
-        <button @click="showAddModal = false" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save Category</button>
+        <button @click="saveCategory" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save Category</button>
       </template>
     </Modal>
 
@@ -115,16 +115,49 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
 
-const categories = [
-    { name: 'Electronics', desc: 'Standard computing devices and peripherals', count: 142 },
-    { name: 'Smart Devices', desc: 'Phones, tablets, and smart home appliances', count: 89 },
-    { name: 'Accessories', desc: 'Cables, chargers, and cases', count: 56 },
-    { name: 'Peripherals', desc: 'Keyboards, mice, and monitors', count: 34 }
-];
+const categories = ref([]);
+const newCategory = ref({ name: '', description: '' });
+
+const fetchCategories = async () => {
+    try {
+        const response = await axios.get('/api/categories');
+        categories.value = response.data;
+    } catch (e) {
+        console.error('Failed to fetch categories:', e);
+    }
+};
+
+const saveCategory = async () => {
+    if (!newCategory.value.name) return;
+    try {
+        await axios.post('/api/categories', newCategory.value);
+        showAddModal.value = false;
+        newCategory.value = { name: '', description: '' };
+        fetchCategories();
+    } catch (e) {
+        console.error('Failed to save category:', e);
+    }
+};
+
+const deleteCategory = async (id) => {
+    if(confirm('Are you sure you want to delete this category?')) {
+        try {
+            await axios.delete(`/api/categories/${id}`);
+            fetchCategories();
+        } catch (e) {
+            console.error('Failed to delete category:', e);
+        }
+    }
+};
+
+onMounted(() => {
+    fetchCategories();
+});
 </script>
