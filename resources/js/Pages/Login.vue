@@ -10,15 +10,6 @@
         <div>
           <BrandLogo size="xl" theme="dark" class="hidden dark:flex" />
           <BrandLogo size="xl" class="dark:hidden" />
-          <!-- Demo Role Buttons -->
-          <div class="pt-6">
-            <p class="text-sm text-center text-gray-500 dark:text-gray-400 mb-4">Demo: Quick Login as Role</p>
-            <div class="grid grid-cols-3 gap-2">
-              <button type="button" @click="demoLogin('admin')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">Admin</button>
-              <button type="button" @click="demoLogin('manager')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">Manager</button>
-              <button type="button" @click="demoLogin('staff')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">Staff</button>
-            </div>
-          </div>
           <h2 class="mt-8 text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Welcome back</h2>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Don't have an account?
@@ -53,14 +44,18 @@
 
           <!-- Login Form -->
           <div class="mt-6">
-            <form @submit.prevent="$router.push('/dashboard')" class="space-y-5">
+            <form @submit.prevent="handleLogin" class="space-y-5">
+              <div v-if="error" class="p-3 py-2.5 text-xs font-medium rounded-xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30">
+                {{ error }}
+              </div>
+
               <div>
                 <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> Email address </label>
                 <div class="relative rounded-xl shadow-sm">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                   </div>
-                  <input id="email" name="email" type="email" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="you@company.com" />
+                  <input id="email" v-model="email" name="email" type="email" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="you@company.com" />
                 </div>
               </div>
 
@@ -70,13 +65,13 @@
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   </div>
-                  <input id="password" name="password" type="password" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="••••••••" />
+                  <input id="password" v-model="password" name="password" type="password" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="••••••••" />
                 </div>
               </div>
 
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-800 rounded bg-white dark:bg-gray-900" />
+                  <input id="remember-me" v-model="remember" name="remember-me" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-800 rounded bg-white dark:bg-gray-900" />
                   <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300"> Remember me </label>
                 </div>
 
@@ -86,8 +81,9 @@
               </div>
 
               <div>
-                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all">
-                  Sign in
+                <button type="submit" :disabled="isSubmitting" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
                 </button>
               </div>
             </form>
@@ -134,16 +130,32 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import BrandLogo from '../Components/BrandLogo.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 import { useAppState } from '../Composables/useAppState';
 
 const router = useRouter();
-const { loginAs } = useAppState();
+const { login } = useAppState();
 
-const demoLogin = (role) => {
-    loginAs(role);
-    router.push('/dashboard');
+const email = ref('');
+const password = ref('');
+const remember = ref(false);
+const error = ref('');
+const isSubmitting = ref(false);
+
+const handleLogin = async () => {
+    error.value = '';
+    isSubmitting.value = true;
+    try {
+        await login(email.value, password.value, remember.value);
+        router.push('/dashboard');
+    } catch (err) {
+        console.error(err);
+        error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 </script>

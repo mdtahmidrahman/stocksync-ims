@@ -1,13 +1,38 @@
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+// Configure Axios defaults for session authentication
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.baseURL = window.location.origin;
 
 const isDark = ref(false);
 const isMobileMenuOpen = ref(false);
 const isSidebarCollapsed = ref(false);
-const currentUserRole = ref('admin'); // admin, manager, staff
+const currentUser = ref(null);
+const isAuthenticated = ref(false);
+const isLoading = ref(true);
+const currentUserRole = ref('staff'); // admin, manager, staff
+
+// Fetch the authenticated user from the backend
+const checkAuth = async () => {
+    try {
+        isLoading.value = true;
+        const response = await axios.get('/api/user');
+        currentUser.value = response.data;
+        isAuthenticated.value = true;
+        currentUserRole.value = response.data.role || 'staff';
+    } catch (error) {
+        currentUser.value = null;
+        isAuthenticated.value = false;
+        currentUserRole.value = 'staff';
+    } finally {
+        isLoading.value = false;
+    }
+};
 
 export function useAppState() {
-    onMounted(() => {
-        // Only run on client
+    onMounted(async () => {
         if (typeof window !== 'undefined') {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -18,15 +43,13 @@ export function useAppState() {
                 document.documentElement.classList.remove('dark');
             }
             
-            const savedRole = localStorage.getItem('role');
-            if (savedRole) {
-                currentUserRole.value = savedRole;
-            }
-
             const savedSidebar = localStorage.getItem('sidebarCollapsed');
             if (savedSidebar === 'true') {
                 isSidebarCollapsed.value = true;
             }
+
+            // Run initial auth check
+            await checkAuth();
         }
     });
 
@@ -52,26 +75,63 @@ export function useAppState() {
         }
     };
 
-    const loginAs = (role) => {
-        currentUserRole.value = role;
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('role', role);
-        }
-    };
-
     const closeMobileMenu = () => {
         isMobileMenuOpen.value = false;
+    };
+
+    // Perform Laravel Session Login
+    const login = async (email, password, remember = false) => {
+        // Ensure CSRF Cookie is initialized
+        await axios.get('/sanctum/csrf-cookie');
+        
+        await axios.post('/login', {
+            email,
+            password,
+            remember
+        });
+
+        // Fetch User details
+        await checkAuth();
+    };
+
+    // Perform Laravel Session Logout
+    const logout = async () => {
+        await axios.post('/logout');
+        currentUser.value = null;
+        isAuthenticated.value = false;
+        currentUserRole.value = 'staff';
+    };
+
+    // Register a new user
+    const signup = async (name, email, password, password_confirmation, role = 'staff') => {
+        await axios.get('/sanctum/csrf-cookie');
+
+        await axios.post('/register', {
+            name,
+            email,
+            password,
+            password_confirmation,
+            role
+        });
+
+        await checkAuth();
     };
 
     return {
         isDark,
         isMobileMenuOpen,
         isSidebarCollapsed,
+        currentUser,
+        isAuthenticated,
+        isLoading,
         currentUserRole,
         toggleDarkMode,
         toggleMobileMenu,
         toggleSidebar,
         closeMobileMenu,
-        loginAs
+        login,
+        logout,
+        signup,
+        checkAuth
     };
 }

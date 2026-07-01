@@ -41,28 +41,29 @@ const routes = [
             { path: 'pricing', component: Pricing },
         ]
     },
-    { path: '/login', component: Login },
-    { path: '/signup', component: Signup },
+    { path: '/login', component: Login, meta: { guestOnly: true } },
+    { path: '/signup', component: Signup, meta: { guestOnly: true } },
     { 
         path: '/', 
         component: AppLayout,
+        meta: { requiresAuth: true },
         children: [
             { path: '/dashboard', component: Dashboard },
-            { path: '/products', component: Products },
-            { path: '/suppliers', component: Suppliers },
+            { path: '/products', component: Products, meta: { roles: ['admin', 'manager'] } },
+            { path: '/suppliers', component: Suppliers, meta: { roles: ['admin', 'manager'] } },
             { path: '/orders', component: Orders },
             { path: '/inventory', component: Inventory },
-            { path: '/purchases', component: Purchases },
-            { path: '/reports', component: Reports },
-            { path: '/settings', component: Settings },
-            { path: '/categories', component: Categories },
-            { path: '/warehouses', component: Warehouses },
-            { path: '/payments', component: Payments },
-            { path: '/roles', component: Roles },
+            { path: '/purchases', component: Purchases, meta: { roles: ['admin', 'manager'] } },
+            { path: '/reports', component: Reports, meta: { roles: ['admin', 'manager'] } },
+            { path: '/settings', component: Settings, meta: { roles: ['admin'] } },
+            { path: '/categories', component: Categories, meta: { roles: ['admin', 'manager'] } },
+            { path: '/warehouses', component: Warehouses, meta: { roles: ['admin', 'manager'] } },
+            { path: '/payments', component: Payments, meta: { roles: ['admin', 'manager'] } },
+            { path: '/roles', component: Roles, meta: { roles: ['admin'] } },
             { path: '/support', component: Support },
             { path: '/sales', component: Sales },
             { path: '/customers', component: Customers },
-            { path: '/audit-log', component: AuditLog },
+            { path: '/audit-log', component: AuditLog, meta: { roles: ['admin', 'manager'] } },
         ]
     }
 ];
@@ -70,6 +71,33 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+import { useAppState } from './Composables/useAppState';
+
+let hasCheckedAuth = false;
+
+router.beforeEach(async (to, from, next) => {
+    const { isAuthenticated, currentUserRole, checkAuth } = useAppState();
+
+    if (!hasCheckedAuth) {
+        await checkAuth();
+        hasCheckedAuth = true;
+    }
+
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const guestOnly = to.matched.some(record => record.meta.guestOnly);
+
+    if (requiresAuth && !isAuthenticated.value) {
+        next('/login');
+    } else if (guestOnly && isAuthenticated.value) {
+        next('/dashboard');
+    } else if (requiresAuth && to.meta.roles && !to.meta.roles.includes(currentUserRole.value)) {
+        // Access forbidden, fallback to dashboard
+        next('/dashboard');
+    } else {
+        next();
+    }
 });
 
 const app = createApp(App);

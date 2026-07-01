@@ -8,12 +8,19 @@
       Track stock, manage suppliers, and fulfill orders seamlessly. Stop using spreadsheets and upgrade to StockSync today.
     </p>
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-      <router-link to="/signup" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30">
-        Start your free trial
-      </router-link>
-      <router-link to="/login" class="w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-        View Live Demo
-      </router-link>
+      <template v-if="isAuthenticated">
+        <router-link to="/dashboard" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg shadow-primary-500/20 active:translate-y-0">
+          Go to Dashboard
+        </router-link>
+      </template>
+      <template v-else>
+        <router-link to="/signup" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg shadow-primary-500/20 active:translate-y-0">
+          Start Free Trial
+        </router-link>
+        <router-link to="/login" class="w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm active:translate-y-0">
+          Sign In to Portal
+        </router-link>
+      </template>
     </div>
     
       <!-- Hero Image -->
@@ -33,5 +40,5 @@
 
 <script setup>
 import { useAppState } from '../Composables/useAppState';
-const { isDark } = useAppState();
+const { isDark, isAuthenticated } = useAppState();
 </script>

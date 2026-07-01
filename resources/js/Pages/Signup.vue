@@ -10,15 +10,6 @@
         <div>
           <BrandLogo size="xl" theme="dark" class="hidden dark:flex" />
           <BrandLogo size="xl" class="dark:hidden" />
-          <!-- Demo Role Buttons -->
-          <div class="pt-6">
-            <p class="text-sm text-center text-gray-500 dark:text-gray-400 mb-4">Demo: Quick Login as Role</p>
-            <div class="grid grid-cols-3 gap-2">
-              <button type="button" @click="demoLogin('admin')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">Admin</button>
-              <button type="button" @click="demoLogin('manager')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">Manager</button>
-              <button type="button" @click="demoLogin('staff')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">Staff</button>
-            </div>
-          </div>
           <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Create your account</h2>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Already have an account?
@@ -53,7 +44,11 @@
 
           <!-- Signup Form -->
           <div class="mt-6">
-            <form @submit.prevent="$router.push('/dashboard')" class="space-y-4">
+            <form @submit.prevent="handleSignup" class="space-y-4">
+              <div v-if="error" class="p-3 py-2.5 text-xs font-medium rounded-xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30">
+                {{ error }}
+              </div>
+
               <!-- Name & Phone -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -62,7 +57,7 @@
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                       </div>
-                      <input id="name" name="name" type="text" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="John Doe" />
+                      <input id="name" v-model="name" name="name" type="text" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="John Doe" />
                     </div>
                   </div>
                   <div>
@@ -71,7 +66,7 @@
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                       </div>
-                      <input id="phone" name="phone" type="text" class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="+880 1*********" />
+                      <input id="phone" v-model="phone" name="phone" type="text" class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="+880 1*********" />
                     </div>
                   </div>
               </div>
@@ -84,7 +79,7 @@
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                       </div>
-                      <input id="company" name="company" type="text" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="Demo Company" />
+                      <input id="company" v-model="company" name="company" type="text" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="Demo Company" />
                     </div>
                   </div>
                   <div>
@@ -118,7 +113,7 @@
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                   </div>
-                  <input id="email" name="email" type="email" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="you@company.com" />
+                  <input id="email" v-model="email" name="email" type="email" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="you@company.com" />
                 </div>
               </div>
 
@@ -128,13 +123,14 @@
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   </div>
-                  <input id="password" name="password" type="password" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="••••••••" />
+                  <input id="password" v-model="password" name="password" type="password" required class="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-all" placeholder="••••••••" />
                 </div>
               </div>
 
               <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-md shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all">
-                  Create Account
+                <button type="submit" :disabled="isSubmitting" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-md shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  {{ isSubmitting ? 'Creating account...' : 'Create Account' }}
                 </button>
                 <p class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
                   By registering, you agree to our <a href="#" class="font-medium text-primary-600 hover:text-primary-500">Terms of Service</a> and <a href="#" class="font-medium text-primary-600 hover:text-primary-500">Privacy Policy</a>.
@@ -147,7 +143,7 @@
     </div>
     
     <!-- Right Panel: Abstract Gradient & Glassmorphism -->
-    <div class="hidden lg:block relative w-0 flex-1 bg-gradient-to-tr from-black via-gray-900 to-primary-900 overflow-hidden">
+    <div class="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-black via-gray-900 to-primary-900 overflow-hidden">
       <!-- Decorative background blobs -->
       <div class="absolute top-0 left-0 w-full h-full opacity-40">
         <div class="absolute top-20 right-20 w-72 h-72 rounded-full bg-primary-500 blur-3xl"></div>
@@ -212,11 +208,29 @@ import ThemeToggle from '../Components/ThemeToggle.vue';
 import { useAppState } from '../Composables/useAppState';
 
 const router = useRouter();
-const { loginAs } = useAppState();
-const selectedIndustry = ref('');
+const { signup } = useAppState();
 
-const demoLogin = (role) => {
-    loginAs(role);
-    router.push('/dashboard');
+const name = ref('');
+const phone = ref('');
+const company = ref('');
+const selectedIndustry = ref('');
+const email = ref('');
+const password = ref('');
+
+const error = ref('');
+const isSubmitting = ref(false);
+
+const handleSignup = async () => {
+    error.value = '';
+    isSubmitting.value = true;
+    try {
+        await signup(name.value, email.value, password.value, password.value, 'staff');
+        router.push('/dashboard');
+    } catch (err) {
+        console.error(err);
+        error.value = err.response?.data?.message || 'Registration failed. Please check the fields and try again.';
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 </script>

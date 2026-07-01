@@ -126,19 +126,19 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
               </div>
               <div v-show="!isSidebarCollapsed" class="hidden sm:block text-left whitespace-nowrap overflow-hidden">
-                <p class="text-sm font-semibold text-white leading-tight">Demo User</p>
+                <p class="text-sm font-semibold text-white leading-tight">{{ currentUser?.name || 'Loading...' }}</p>
                 <p class="text-xs text-primary-300">{{ displayRole }}</p>
               </div>
             </div>
           </template>
           <template #content="{ close }">
             <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-              <p class="text-sm text-gray-900 dark:text-white">Demo User</p>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">demo@stocksync.com</p>
+              <p class="text-sm text-gray-900 dark:text-white">{{ currentUser?.name || 'Loading...' }}</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ currentUser?.email || '' }}</p>
             </div>
             <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="close">Profile Settings</a>
             <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="close">Billing</a>
-            <a href="/login" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-t border-gray-100 dark:border-gray-700" @click="close">Sign out</a>
+            <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-t border-gray-100 dark:border-gray-700" @click.prevent="handleLogout(); close()">Sign out</a>
           </template>
         </Dropdown>
         <div class="flex items-center gap-1" :class="isSidebarCollapsed ? 'flex-col' : ''">
@@ -150,7 +150,7 @@
           </Tooltip>
           
           <Tooltip text="Logout" position="top">
-            <button class="text-primary-300 hover:text-white p-2 rounded-lg hover:bg-primary-800 transition-colors">
+            <button @click="handleLogout" class="text-primary-300 hover:text-white p-2 rounded-lg hover:bg-primary-800 transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
           </Tooltip>
@@ -230,10 +230,12 @@
 
 <script setup>
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import BrandLogo from './BrandLogo.vue';
 import { useAppState } from '../Composables/useAppState';
 
-const { currentUserRole, isMobileMenuOpen, closeMobileMenu, isSidebarCollapsed, toggleSidebar } = useAppState();
+const router = useRouter();
+const { currentUserRole, isMobileMenuOpen, closeMobileMenu, isSidebarCollapsed, toggleSidebar, currentUser, logout } = useAppState();
 const showNotificationsPanel = ref(false);
 
 const displayRole = computed(() => {
@@ -241,6 +243,16 @@ const displayRole = computed(() => {
   if (currentUserRole.value === 'manager') return 'Store Manager';
   return 'Floor Staff';
 });
+
+const handleLogout = async () => {
+  try {
+    await logout();
+    router.push('/login');
+  } catch (err) {
+    console.error('Logout failed:', err);
+    router.push('/login');
+  }
+};
 </script>
 
 <style scoped>
