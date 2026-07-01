@@ -24,7 +24,7 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" v-for="role in ['All Roles', 'Admin', 'Manager', 'Staff']" :key="role" @click.prevent="filterRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+                <a href="#" v-for="role in ['All Roles', 'Company Admin', 'Manager', 'Staff']" :key="role" @click.prevent="filterRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
               </template>
             </Dropdown>
         </div>
@@ -58,7 +58,7 @@
               </td>
               <td class="p-4">
                 <span :class="roleClass(user.role)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                  {{ user.role }}
+                  {{ user.roleName }}
                 </span>
               </td>
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ user.location }}</td>
@@ -69,7 +69,7 @@
               </td>
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ i === 0 ? 'Just now' : i + ' days ago' }}</td>
               <td class="p-4 text-right whitespace-nowrap">
-                <button class="text-primary-600 hover:text-primary-800 dark:hover:text-primary-400 text-sm font-medium transition-colors">
+                <button @click="openEditModal(user)" class="text-primary-600 hover:text-primary-800 dark:hover:text-primary-400 text-sm font-medium transition-colors">
                   Edit Access
                 </button>
               </td>
@@ -80,13 +80,20 @@
     </div>
 
     <!-- Invite User Modal -->
-    <Modal :show="showAddModal" @close="showAddModal = false" @save="showAddModal = false">
+    <Modal :show="showAddModal" :scrollable="false" @close="showAddModal = false" @save="handleInvite">
       <template #title>Invite Team Member</template>
       <template #body>
         <div class="space-y-4">
+          <div v-if="error" class="p-3 text-xs font-medium rounded-xl bg-red-50 text-red-600 border border-red-100">
+             {{ error }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+            <input type="text" v-model="newName" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="John Doe" />
+          </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-            <input type="email" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="employee@company.com" />
+            <input type="email" v-model="newEmail" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="employee@company.com" />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -99,7 +106,7 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="role in ['Super Admin', 'Store Manager', 'Floor Staff']" :key="role" @click.prevent="newRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+                  <a href="#" v-for="role in ['Manager', 'Staff']" :key="role" @click.prevent="newRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
                 </template>
               </Dropdown>
             </div>
@@ -128,29 +135,180 @@
         </div>
       </template>
     </Modal>
+
+    <!-- Edit User Modal -->
+    <Modal :show="showEditModal" :scrollable="false" @close="showEditModal = false" @save="handleEdit">
+      <template #title>Edit Team Member Access</template>
+      <template #body>
+        <div class="space-y-4">
+          <div v-if="editError" class="p-3 text-xs font-medium rounded-xl bg-red-50 text-red-600 border border-red-100">
+             {{ editError }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+            <input type="text" :value="editingUser?.name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-500 sm:text-sm cursor-not-allowed" disabled />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+            <input type="email" :value="editingUser?.email" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-500 sm:text-sm cursor-not-allowed" disabled />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Role</label>
+            <Dropdown align="left" width="full" fullWidth>
+              <template #trigger>
+                <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                  <span :class="!editRole ? 'text-gray-500' : ''">{{ editRole || 'Select Role...' }}</span>
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content="{ close }">
+                <a href="#" v-for="role in ['Manager', 'Staff']" :key="role" @click.prevent="editRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="editRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+              </template>
+            </Dropdown>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-between w-full items-center">
+          <button @click="handleDelete(editingUser?.id)" class="text-sm font-semibold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors">Revoke Access</button>
+          <div class="flex gap-2">
+            <button @click="showEditModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
+            <button @click="handleEdit" :disabled="isEditing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Save Changes</button>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);
+const showEditModal = ref(false);
 const filterRole = ref('All Roles');
-const newRole = ref('');
-const newLocation = ref('All Locations');
 
-const users = [
-    { name: 'Demo Admin', email: 'admin@democompany.com', initials: 'DA', role: 'Super Admin', location: 'All Locations' },
-    { name: 'Sarah Jenkins', email: 'sarah@democompany.com', initials: 'SJ', role: 'Store Manager', location: 'West Coast Storage' },
-    { name: 'Michael Scott', email: 'michael@democompany.com', initials: 'MS', role: 'Store Manager', location: 'Central Distribution' },
-    { name: 'Dwight Schrute', email: 'dwight@democompany.com', initials: 'DS', role: 'Floor Staff', location: 'Central Distribution' },
-    { name: 'Jim Halpert', email: 'jim@democompany.com', initials: 'JH', role: 'Floor Staff', location: 'Central Distribution' },
-];
+// Add Form
+const newRole = ref('');
+const newEmail = ref('');
+const newName = ref('');
+const newLocation = ref('All Locations'); // Placeholder for now
+
+// Edit Form
+const editingUser = ref(null);
+const editRole = ref('');
+const editError = ref('');
+const isEditing = ref(false);
+
+const users = ref([]);
+const isInviting = ref(false);
+const error = ref('');
+
+const fetchTeam = async () => {
+    try {
+        const response = await axios.get('/api/team');
+        // Add fake location and initials to real data for UI purposes until we build locations
+        users.value = response.data.map(u => ({
+            ...u,
+            initials: u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+            location: 'HQ',
+            roleName: u.role === 'admin' ? 'Company Admin' : (u.role === 'manager' ? 'Manager' : 'Staff')
+        }));
+    } catch (err) {
+        console.error('Failed to load team:', err);
+    }
+};
+
+onMounted(() => {
+    fetchTeam();
+});
+
+const handleInvite = async () => {
+    error.value = '';
+    
+    if (!newName.value || !newEmail.value || !newRole.value) {
+        error.value = 'Please fill out all fields.';
+        return;
+    }
+
+    // Map UI role to backend role enum
+    const backendRole = newRole.value === 'Manager' ? 'manager' : 'staff';
+
+    isInviting.value = true;
+    try {
+        await axios.post('/api/team', {
+            name: newName.value,
+            email: newEmail.value,
+            role: backendRole
+        });
+        showAddModal.value = false;
+        fetchTeam(); // Refresh the list
+        
+        // Reset form
+        newName.value = '';
+        newEmail.value = '';
+        newRole.value = '';
+    } catch (err) {
+        error.value = err.response?.data?.message || 'Failed to invite user.';
+    } finally {
+        isInviting.value = false;
+    }
+};
+
+const openEditModal = (user) => {
+    if (user.role === 'admin') {
+        alert('You cannot edit the Company Admin role.');
+        return;
+    }
+    
+    editingUser.value = { ...user };
+    editRole.value = user.role === 'manager' ? 'Manager' : 'Staff';
+    editError.value = '';
+    showEditModal.value = true;
+};
+
+const handleEdit = async () => {
+    if (!editRole.value) {
+        editError.value = 'Please select a role.';
+        return;
+    }
+
+    const backendRole = editRole.value === 'Manager' ? 'manager' : 'staff';
+    isEditing.value = true;
+    editError.value = '';
+
+    try {
+        await axios.put(`/api/team/${editingUser.value.id}`, {
+            role: backendRole
+        });
+        showEditModal.value = false;
+        fetchTeam();
+    } catch (err) {
+        editError.value = err.response?.data?.message || 'Failed to update user.';
+    } finally {
+        isEditing.value = false;
+    }
+};
+
+const handleDelete = async (userId) => {
+    if (!confirm('Are you sure you want to completely revoke this user\'s access to the system?')) {
+        return;
+    }
+
+    try {
+        await axios.delete(`/api/team/${userId}`);
+        showEditModal.value = false;
+        fetchTeam();
+    } catch (err) {
+        editError.value = err.response?.data?.message || 'Failed to revoke access.';
+    }
+};
 
 const roleClass = (role) => {
-    if (role === 'Super Admin') return 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300';
-    if (role === 'Store Manager') return 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300';
+    if (role === 'admin') return 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300';
+    if (role === 'manager') return 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300';
     return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
 };
 </script>
