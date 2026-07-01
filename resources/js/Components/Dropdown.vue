@@ -17,7 +17,7 @@
       <div
         v-if="isOpen"
         :class="[
-          'absolute z-50 mt-2 rounded-xl shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 focus:outline-none',
+          'absolute z-50 rounded-xl shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 focus:outline-none',
           widthClass,
           alignClass
         ]"
@@ -37,11 +37,11 @@ import { useClickOutside } from '../Composables/useClickOutside';
 const props = defineProps({
   align: {
     type: String,
-    default: 'right', // 'left', 'right', 'center'
+    default: 'right', // 'left', 'right', 'center', 'top-left', 'top-right', 'top-center'
   },
   width: {
     type: String,
-    default: '48', // Tailwind width class suffix e.g., '48', '56', 'w-auto'
+    default: '48', 
   },
   fullWidth: {
     type: Boolean,
@@ -60,17 +60,15 @@ const close = () => {
   isOpen.value = false;
 };
 
-// Close on outside click
 useClickOutside(dropdownRef, close);
 
 const alignClass = computed(() => {
-  if (props.align === 'left') {
-    return 'origin-top-left left-0';
-  } else if (props.align === 'right') {
-    return 'origin-top-right right-0';
-  } else {
-    return 'origin-top left-1/2 -translate-x-1/2';
-  }
+  if (props.align === 'left') return 'origin-top-left left-0 mt-2';
+  if (props.align === 'right') return 'origin-top-right right-0 mt-2';
+  if (props.align === 'top-left') return 'origin-bottom-left left-0 bottom-full mb-2';
+  if (props.align === 'top-right') return 'origin-bottom-right right-0 bottom-full mb-2';
+  if (props.align === 'top-center') return 'origin-bottom left-1/2 -translate-x-1/2 bottom-full mb-2';
+  return 'origin-top left-1/2 -translate-x-1/2 mt-2';
 });
 
 const widthClass = computed(() => {

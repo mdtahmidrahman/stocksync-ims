@@ -41,39 +41,30 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="i in 5" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="product in products" :key="product.id">
               <td class="p-4">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                   </div>
                   <div>
-                    <div class="font-medium text-gray-900 dark:text-white whitespace-nowrap">Wireless Headphones</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Audio Equipment</div>
+                    <div class="font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ product.name }}</div>
                   </div>
                 </div>
               </td>
-              <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">WH-10{{ i }}2</td>
+              <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">{{ product.sku }}</td>
               <td class="p-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300">
-                  Electronics
+                  {{ product.category?.name || 'Uncategorized' }}
                 </span>
               </td>
-              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">$129.99</td>
+              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">${{ parseFloat(product.price).toFixed(2) }}</td>
               <td class="p-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shrink-0">
-                    <div class="bg-green-500 h-full" style="width: 75%"></div>
-                  </div>
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">45</span>
-                </div>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ product.stock_level }}</span>
               </td>
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-2">
-                  <button @click="showBarcodeModal = true" class="text-gray-400 hover:text-blue-600 transition-colors" title="Print Barcode">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                  </button>
-                  <button @click="showEditModal = true" class="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 text-sm font-medium">Edit</button>
+                  <button @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
                 </div>
               </td>
             </tr>
@@ -91,7 +82,7 @@
       </div>
     </div>
     <!-- Add Product Modal -->
-    <Modal :show="showAddModal" @close="showAddModal = false" @save="showAddModal = false">
+    <Modal :show="showAddModal" :scrollable="false" @close="showAddModal = false" @save="showAddModal = false">
       <template #title>Add New Product</template>
       <template #body>
         <div class="space-y-4">
@@ -106,33 +97,36 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
-            <input type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Wireless Headphones" />
+            <input v-model="newProduct.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Wireless Headphones" />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
-                SKU
-                <button type="button" class="text-primary-600 hover:text-primary-800 text-xs font-semibold">Generate</button>
-              </label>
-              <input type="text" placeholder="e.g. TECH-102" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
+              <input v-model="newProduct.sku" type="text" placeholder="e.g. TECH-102" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                <option>Electronics</option>
-                <option>Smart Devices</option>
-                <option>Accessories</option>
-              </select>
+              <Dropdown align="left" width="full" fullWidth>
+                <template #trigger>
+                  <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                    <span :class="!newProduct.category_id ? 'text-gray-500' : ''">{{ newProduct.category_id ? categories.find(c => c.id === newProduct.category_id)?.name : 'Select a category' }}</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                </template>
+                <template #content="{ close }">
+                  <a href="#" v-for="cat in categories" :key="cat.id" @click.prevent="newProduct.category_id = cat.id; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newProduct.category_id === cat.id ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
+                </template>
+              </Dropdown>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ($)</label>
-              <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0.00" />
+              <input v-model="newProduct.price" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0.00" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial Stock</label>
-              <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="100" />
+              <input v-model="newProduct.stock_level" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0" />
             </div>
           </div>
           
@@ -164,7 +158,7 @@
           <button @click="showAddModal = false; showCustomProductModal = true" class="text-sm font-semibold text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">Add Customized Product</button>
           <div class="flex gap-2">
             <button @click="showAddModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
-            <button @click="showAddModal = false" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save Product</button>
+            <button @click="saveProduct" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save Product</button>
           </div>
         </div>
       </template>
@@ -322,12 +316,71 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import Modal from '../Components/Modal.vue';
+import Dropdown from '../Components/Dropdown.vue';
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
 const showBulkUploadModal = ref(false);
 const showCustomProductModal = ref(false);
 const showBarcodeModal = ref(false);
+
+const products = ref([]);
+const categories = ref([]);
+
+const newProduct = ref({
+    name: '',
+    sku: '',
+    category_id: '',
+    price: 0,
+    stock_level: 0
+});
+
+const fetchProducts = async () => {
+    try {
+        const response = await axios.get('/api/products');
+        products.value = response.data;
+    } catch (e) {
+        console.error('Failed to fetch products:', e);
+    }
+};
+
+const fetchCategories = async () => {
+    try {
+        const response = await axios.get('/api/categories');
+        categories.value = response.data;
+    } catch (e) {
+        console.error('Failed to fetch categories:', e);
+    }
+};
+
+const saveProduct = async () => {
+    if (!newProduct.value.name || !newProduct.value.category_id) return;
+    try {
+        await axios.post('/api/products', newProduct.value);
+        showAddModal.value = false;
+        newProduct.value = { name: '', sku: '', category_id: '', price: 0, stock_level: 0 };
+        fetchProducts();
+    } catch (e) {
+        console.error('Failed to save product:', e);
+    }
+};
+
+const deleteProduct = async (id) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+        try {
+            await axios.delete(`/api/products/${id}`);
+            fetchProducts();
+        } catch (e) {
+            console.error('Failed to delete product:', e);
+        }
+    }
+};
+
+onMounted(() => {
+    fetchProducts();
+    fetchCategories();
+});
 </script>

@@ -16,12 +16,19 @@
         
         <div class="flex items-center gap-2 md:gap-4">
           <ThemeToggle />
-          <router-link to="/login" class="hidden md:flex text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent transition-colors">
-            Login
-          </router-link>
-          <router-link to="/signup" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
-            Get Started
-          </router-link>
+          <template v-if="isAuthenticated">
+            <router-link :to="currentUserRole === 'super_admin' ? '/platform' : '/dashboard'" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
+              Go to Dashboard
+            </router-link>
+          </template>
+          <template v-else>
+            <router-link to="/login" class="hidden md:flex text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent transition-colors">
+              Login
+            </router-link>
+            <router-link to="/signup" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
+              Get Started
+            </router-link>
+          </template>
         </div>
       </div>
     </header>
@@ -125,7 +132,7 @@ import BrandLogo from '../Components/BrandLogo.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 import { useAppState } from '../Composables/useAppState';
 
-const { isDark } = useAppState();
+const { isDark, isAuthenticated, currentUserRole } = useAppState();
 const route = useRoute();
 const isRoute = (path) => route.path === path;
 </script>

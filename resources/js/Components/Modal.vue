@@ -22,7 +22,10 @@
           leave-from-class="opacity-100 translate-y-0 sm:scale-100"
           leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
-          <div v-if="show" class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 text-left overflow-hidden transform transition-all sm:my-8 sm:max-w-lg w-full flex flex-col max-h-[90vh]">
+          <div v-if="show" :class="[
+            'relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 text-left transform transition-all sm:my-8 sm:max-w-lg w-full flex flex-col',
+            scrollable ? 'overflow-hidden max-h-[90vh]' : 'overflow-visible'
+          ]">
             
             <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
@@ -37,8 +40,8 @@
               </button>
             </div>
 
-            <!-- Body (Scrollable) -->
-            <div class="px-6 py-4 overflow-y-auto">
+            <!-- Body -->
+            <div :class="['px-6 py-4', scrollable ? 'overflow-y-auto' : '']">
               <slot name="body"></slot>
             </div>
 
@@ -68,6 +71,10 @@ const props = defineProps({
   show: {
     type: Boolean,
     default: false
+  },
+  scrollable: {
+    type: Boolean,
+    default: true
   }
 });
 
