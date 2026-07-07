@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white mb-6">Support & Help Center</h1>
 
@@ -23,7 +24,7 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="cat in ['System Bug', 'Inventory Discrepancy', 'Billing Issue', 'Other']" :key="cat" @click.prevent="issueCategory = cat; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="issueCategory === cat ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat }}</a>
+                  <a href="#" v-for="cat in ['System Bug', 'Inventory Discrepancy', 'Billing Issue', 'Other']" :key="cat" @click.prevent="issueCategory = cat; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="issueCategory === cat ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat }}</a>
                 </template>
               </Dropdown>
             </div>
@@ -50,14 +51,14 @@
                 <span class="text-sm font-medium text-gray-900 dark:text-white">Barcode Scanner not syncing</span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">Open</span>
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #8492 • Submitted 2 hrs ago</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #8492 â€¢ Submitted 2 hrs ago</div>
             </div>
             <div class="border border-gray-100 dark:border-gray-800 rounded-lg p-3 opacity-60">
               <div class="flex justify-between items-start mb-1">
                 <span class="text-sm font-medium text-gray-900 dark:text-white">Stock report export failing</span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300">Resolved</span>
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #8450 • Submitted 3 days ago</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #8450 â€¢ Submitted 3 days ago</div>
             </div>
           </div>
         </div>
@@ -82,9 +83,11 @@
 
     </div>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 
 const issueCategory = ref('System Bug');

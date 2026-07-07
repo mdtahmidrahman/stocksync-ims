@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Payments & Billing</h1>
@@ -19,7 +20,7 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" v-for="type in ['All Types', 'Incoming (Sales)', 'Outgoing (Purchases)']" :key="type" @click.prevent="paymentType = type; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="paymentType === type ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ type }}</a>
+                <a href="#" v-for="type in ['All Types', 'Incoming (Sales)', 'Outgoing (Purchases)']" :key="type" @click.prevent="paymentType = type; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="paymentType === type ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ type }}</a>
               </template>
             </Dropdown>
         </div>
@@ -44,7 +45,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="i in 8" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="i in 8" :key="i">
               <td class="p-4 text-sm font-medium text-primary-600 dark:text-primary-400">TXN-902{{ i }}4{{ i }}</td>
               <td class="p-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">Oct 1{{ i }}, 2024</td>
               <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">{{ i % 2 === 0 ? 'INV-204' : 'PO-092' }}</td>
@@ -77,9 +78,11 @@
       </div>
     </div>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 
 const paymentType = ref('All Types');

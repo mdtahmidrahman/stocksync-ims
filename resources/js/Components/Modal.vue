@@ -23,14 +23,15 @@
           leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
           <div v-if="show" :class="[
-            'relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 text-left transform transition-all sm:my-8 sm:max-w-lg w-full flex flex-col',
+            'relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 text-left transform transition-all sm:my-8 w-full flex flex-col',
+            maxWidthClass,
             scrollable ? 'overflow-hidden max-h-[90vh]' : 'overflow-visible'
           ]">
             
             <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
               <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modal-title">
-                <slot name="title">Modal Title</slot>
+                <slot name="title">{{ title || 'Modal Title' }}</slot>
               </h3>
               <button @click="$emit('close')" type="button" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none transition-colors">
                 <span class="sr-only">Close</span>
@@ -65,7 +66,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   show: {
@@ -75,7 +76,26 @@ const props = defineProps({
   scrollable: {
     type: Boolean,
     default: true
+  },
+  title: {
+    type: String,
+    default: null
+  },
+  maxWidth: {
+    type: String,
+    default: 'lg'
   }
+});
+
+const maxWidthClass = computed(() => {
+    return {
+        'sm': 'sm:max-w-sm',
+        'md': 'sm:max-w-md',
+        'lg': 'sm:max-w-lg',
+        'xl': 'sm:max-w-xl',
+        '2xl': 'sm:max-w-2xl',
+        '3xl': 'sm:max-w-3xl',
+    }[props.maxWidth] || 'sm:max-w-lg';
 });
 
 const emit = defineEmits(['close', 'save']);

@@ -5,13 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Eager load the category name for the frontend
-        return response()->json(Product::with('category')->get());
+        $products = Product::with('category')->get();
+
+        if ($request->wantsJson()) {
+            return response()->json($products);
+        }
+
+        return Inertia::render('Products', [
+            'products' => $products,
+            'categories' => \App\Models\Category::all()
+        ]);
     }
 
     public function store(Request $request)
@@ -50,7 +59,11 @@ class ProductController extends Controller
         $product = Product::create($productData);
         $product->load('category');
 
-        return response()->json($product, 201);
+        if ($request->wantsJson()) {
+            return response()->json($product, 201);
+        }
+
+        return redirect()->back()->with('success', 'Product created successfully.');
     }
 
     public function show(Product $product)
@@ -70,9 +83,9 @@ class ProductController extends Controller
                 'required', 
                 'string', 
                 'max:255', 
-                Rule::unique('products')->where(function ($query) {
-                    return $query->where('company_id', auth()->user()->company_id);
-                })->ignore($product->id)
+                Rule::unique('products')->where(function ($query) use ($product) {
+                    return $query->where('company_id', auth()->user()->company_id)->ignore($product->id);
+                })
             ],
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
@@ -85,12 +98,21 @@ class ProductController extends Controller
         $product->update($request->all());
         $product->load('category');
 
-        return response()->json($product);
+        if ($request->wantsJson()) {
+            return response()->json($product);
+        }
+
+        return redirect()->back()->with('success', 'Product updated successfully.');
     }
 
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
         $product->delete();
-        return response()->noContent();
+
+        if ($request->wantsJson()) {
+            return response()->noContent();
+        }
+
+        return redirect()->back()->with('success', 'Product deleted successfully.');
     }
 }

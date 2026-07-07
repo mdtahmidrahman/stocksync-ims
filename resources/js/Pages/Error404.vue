@@ -14,14 +14,14 @@
       </p>
       
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <router-link to="/" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg shadow-primary-500/20 active:translate-y-0 flex items-center justify-center gap-2">
+        <Link href="/" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg shadow-primary-500/20 active:translate-y-0 flex items-center justify-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
           </svg>
           Back to Home
-        </router-link>
+        </Link>
         
-        <button @click="$router.go(-1)" class="w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm active:translate-y-0">
+        <button @click="window.history.back()" class="w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm active:translate-y-0">
           Go Back
         </button>
       </div>

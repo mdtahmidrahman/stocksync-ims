@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Audit Log & System Activity</h1>
@@ -21,7 +22,7 @@
               </button>
             </template>
             <template #content="{ close }">
-              <a href="#" v-for="user in ['All Users', 'Demo Admin', 'Sarah Jenkins', 'Michael Scott']" :key="user" @click.prevent="filterUser = user; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterUser === user ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ user }}</a>
+              <a href="#" v-for="user in ['All Users', 'Demo Admin', 'Sarah Jenkins', 'Michael Scott']" :key="user" @click.prevent="filterUser = user; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="filterUser === user ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ user }}</a>
             </template>
           </Dropdown>
         </div>
@@ -35,7 +36,7 @@
               </button>
             </template>
             <template #content="{ close }">
-              <a href="#" v-for="action in ['All Actions', 'Create', 'Update', 'Delete', 'Login']" :key="action" @click.prevent="filterAction = action; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterAction === action ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ action }}</a>
+              <a href="#" v-for="action in ['All Actions', 'Create', 'Update', 'Delete', 'Login']" :key="action" @click.prevent="filterAction = action; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="filterAction === action ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ action }}</a>
             </template>
           </Dropdown>
         </div>
@@ -49,7 +50,7 @@
               </button>
             </template>
             <template #content="{ close }">
-              <a href="#" v-for="module in ['All Modules', 'Inventory', 'Sales', 'Users', 'Settings']" :key="module" @click.prevent="filterModule = module; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterModule === module ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ module }}</a>
+              <a href="#" v-for="module in ['All Modules', 'Inventory', 'Sales', 'Users', 'Settings']" :key="module" @click.prevent="filterModule = module; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="filterModule === module ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ module }}</a>
             </template>
           </Dropdown>
         </div>
@@ -73,7 +74,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="(log, i) in logs" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="(log, i) in logs" :key="i">
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ log.time }}</td>
               <td class="p-4">
                 <div class="font-medium text-gray-900 dark:text-white text-sm">{{ log.user }}</div>
@@ -101,9 +102,11 @@
       </div>
     </div>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 
 const filterUser = ref('All Users');

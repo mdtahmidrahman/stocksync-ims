@@ -4,13 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // TenantScope automatically filters categories to the user's company
-        return response()->json(Category::all());
+        $categories = Category::all();
+
+        if ($request->wantsJson()) {
+            return response()->json($categories);
+        }
+
+        return Inertia::render('Categories', [
+            'categories' => $categories
+        ]);
     }
 
     public function store(Request $request)
@@ -20,10 +28,13 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        // BelongsToCompany trait automatically assigns the user's company_id
         $category = Category::create($request->all());
 
-        return response()->json($category, 201);
+        if ($request->wantsJson()) {
+            return response()->json($category, 201);
+        }
+
+        return redirect()->back()->with('success', 'Category created successfully.');
     }
 
     public function show(Category $category)
@@ -40,12 +51,21 @@ class CategoryController extends Controller
 
         $category->update($request->all());
 
-        return response()->json($category);
+        if ($request->wantsJson()) {
+            return response()->json($category);
+        }
+
+        return redirect()->back()->with('success', 'Category updated successfully.');
     }
 
-    public function destroy(Category $category)
+    public function destroy(Request $request, Category $category)
     {
         $category->delete();
-        return response()->noContent();
+
+        if ($request->wantsJson()) {
+            return response()->noContent();
+        }
+
+        return redirect()->back()->with('success', 'Category deleted successfully.');
     }
 }

@@ -4,12 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class WarehouseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Warehouse::all());
+        $warehouses = Warehouse::all();
+
+        if ($request->wantsJson()) {
+            return response()->json($warehouses);
+        }
+
+        return Inertia::render('Warehouses', [
+            'warehouses' => $warehouses
+        ]);
     }
 
     public function store(Request $request)
@@ -22,7 +31,11 @@ class WarehouseController extends Controller
 
         $warehouse = Warehouse::create($request->all());
 
-        return response()->json($warehouse, 201);
+        if ($request->wantsJson()) {
+            return response()->json($warehouse, 201);
+        }
+
+        return redirect()->back()->with('success', 'Warehouse created successfully.');
     }
 
     public function show(Warehouse $warehouse)
@@ -40,12 +53,21 @@ class WarehouseController extends Controller
 
         $warehouse->update($request->all());
 
-        return response()->json($warehouse);
+        if ($request->wantsJson()) {
+            return response()->json($warehouse);
+        }
+
+        return redirect()->back()->with('success', 'Warehouse updated successfully.');
     }
 
-    public function destroy(Warehouse $warehouse)
+    public function destroy(Request $request, Warehouse $warehouse)
     {
         $warehouse->delete();
-        return response()->noContent();
+
+        if ($request->wantsJson()) {
+            return response()->noContent();
+        }
+
+        return redirect()->back()->with('success', 'Warehouse deleted successfully.');
     }
 }

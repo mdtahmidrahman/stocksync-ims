@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">User Roles & Team</h1>
@@ -24,7 +25,7 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" v-for="role in ['All Roles', 'Company Admin', 'Manager', 'Staff']" :key="role" @click.prevent="filterRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+                <a href="#" v-for="role in ['All Roles', 'Company Admin', 'Manager', 'Staff']" :key="role" @click.prevent="filterRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="filterRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
               </template>
             </Dropdown>
         </div>
@@ -44,7 +45,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="(user, i) in users" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="(user, i) in users" :key="i">
               <td class="p-4">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold">
@@ -106,7 +107,7 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="role in ['Manager', 'Staff']" :key="role" @click.prevent="newRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+                  <a href="#" v-for="role in ['Manager', 'Staff']" :key="role" @click.prevent="newRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="newRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
                 </template>
               </Dropdown>
             </div>
@@ -120,7 +121,7 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="loc in ['All Locations', 'Central Distribution Hub', 'West Coast Storage', 'East Coast Fulfillment']" :key="loc" @click.prevent="newLocation = loc; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newLocation === loc ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ loc }}</a>
+                  <a href="#" v-for="loc in ['All Locations', 'Central Distribution Hub', 'West Coast Storage', 'East Coast Fulfillment']" :key="loc" @click.prevent="newLocation = loc; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="newLocation === loc ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ loc }}</a>
                 </template>
               </Dropdown>
             </div>
@@ -162,7 +163,7 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" v-for="role in ['Manager', 'Staff']" :key="role" @click.prevent="editRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="editRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
+                <a href="#" v-for="role in ['Manager', 'Staff']" :key="role" @click.prevent="editRole = role; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="editRole === role ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ role }}</a>
               </template>
             </Dropdown>
           </div>
@@ -179,12 +180,22 @@
       </template>
     </Modal>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import AppLayout from '../Layouts/AppLayout.vue';
+import { ref, watch, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import Modal from '../Components/Modal.vue';
+
+const props = defineProps({
+    team: {
+        type: Array,
+        default: () => []
+    }
+});
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -206,24 +217,24 @@ const users = ref([]);
 const isInviting = ref(false);
 const error = ref('');
 
-const fetchTeam = async () => {
-    try {
-        const response = await axios.get('/api/team');
-        // Add fake location and initials to real data for UI purposes until we build locations
-        users.value = response.data.map(u => ({
-            ...u,
-            initials: u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
-            location: 'HQ',
-            roleName: u.role === 'admin' ? 'Company Admin' : (u.role === 'manager' ? 'Manager' : 'Staff')
-        }));
-    } catch (err) {
-        console.error('Failed to load team:', err);
-    }
+const formatTeam = (teamData) => {
+    return (teamData || []).map(u => ({
+        ...u,
+        initials: u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+        location: 'HQ',
+        roleName: u.role === 'admin' ? 'Company Admin' : (u.role === 'manager' ? 'Manager' : 'Staff')
+    }));
 };
 
-onMounted(() => {
-    fetchTeam();
-});
+users.value = formatTeam(props.team);
+
+watch(() => props.team, (newTeam) => {
+    users.value = formatTeam(newTeam);
+}, { deep: true, immediate: true });
+
+const fetchTeam = () => {
+    router.reload({ only: ['team'] });
+};
 
 const handleInvite = async () => {
     error.value = '';

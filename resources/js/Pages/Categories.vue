@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <AppLayout>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Categories</h1>
       <button @click="showAddModal = true" class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm self-start sm:self-auto flex items-center gap-2">
@@ -33,7 +33,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="(cat, i) in categories" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="(cat, i) in categories" :key="i">
               <td class="p-4">
                 <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600">
               </td>
@@ -111,53 +111,40 @@
         <button @click="showEditModal = false" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Update Category</button>
       </template>
     </Modal>
-  </div>
+  </AppLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
+
+defineProps({
+    categories: {
+        type: Array,
+        default: () => []
+    }
+});
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
 
-const categories = ref([]);
 const newCategory = ref({ name: '', description: '' });
 
-const fetchCategories = async () => {
-    try {
-        const response = await axios.get('/api/categories');
-        categories.value = response.data;
-    } catch (e) {
-        console.error('Failed to fetch categories:', e);
-    }
-};
-
-const saveCategory = async () => {
+const saveCategory = () => {
     if (!newCategory.value.name) return;
-    try {
-        await axios.post('/api/categories', newCategory.value);
-        showAddModal.value = false;
-        newCategory.value = { name: '', description: '' };
-        fetchCategories();
-    } catch (e) {
-        console.error('Failed to save category:', e);
-    }
-};
-
-const deleteCategory = async (id) => {
-    if(confirm('Are you sure you want to delete this category?')) {
-        try {
-            await axios.delete(`/api/categories/${id}`);
-            fetchCategories();
-        } catch (e) {
-            console.error('Failed to delete category:', e);
+    router.post('/categories', newCategory.value, {
+        onSuccess: () => {
+            showAddModal.value = false;
+            newCategory.value = { name: '', description: '' };
         }
-    }
+    });
 };
 
-onMounted(() => {
-    fetchCategories();
-});
+const deleteCategory = (id) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+        router.delete(`/categories/${id}`);
+    }
+};
 </script>

@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Suppliers</h1>
@@ -55,11 +56,19 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Industry / Category</label>
-            <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-              <option>Electronics</option>
-              <option>Manufacturing</option>
-              <option>Logistics</option>
-            </select>
+            <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      <span class="truncate pr-2">Electronics</span>
+                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Electronics</a>
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Manufacturing</a>
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Logistics</a>
+                  </template>
+                </Dropdown>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -112,9 +121,12 @@
       </template>
     </Modal>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import Dropdown from '../Components/Dropdown.vue';
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 import Modal from '../Components/Modal.vue';
 

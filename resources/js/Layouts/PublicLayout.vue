@@ -9,25 +9,25 @@
         </div>
         
         <nav class="hidden md:flex items-center space-x-10">
-          <router-link to="/" class="text-sm font-semibold transition-colors pb-1" :class="isRoute('/') ? 'text-gray-900 dark:text-white border-b-2 border-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Home</router-link>
-          <router-link to="/features" class="text-sm font-semibold transition-colors pb-1" :class="isRoute('/features') ? 'text-gray-900 dark:text-white border-b-2 border-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Features</router-link>
-          <router-link to="/pricing" class="text-sm font-semibold transition-colors pb-1" :class="isRoute('/pricing') ? 'text-gray-900 dark:text-white border-b-2 border-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Pricing</router-link>
+          <Link href="/" class="text-sm font-semibold transition-colors pb-1" :class="isRoute('/') ? 'text-gray-900 dark:text-white border-b-2 border-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Home</Link>
+          <Link href="/features" class="text-sm font-semibold transition-colors pb-1" :class="isRoute('/features') ? 'text-gray-900 dark:text-white border-b-2 border-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Features</Link>
+          <Link href="/pricing" class="text-sm font-semibold transition-colors pb-1" :class="isRoute('/pricing') ? 'text-gray-900 dark:text-white border-b-2 border-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Pricing</Link>
         </nav>
         
         <div class="flex items-center gap-2 md:gap-4">
           <ThemeToggle />
           <template v-if="isAuthenticated">
-            <router-link :to="currentUserRole === 'super_admin' ? '/platform' : '/dashboard'" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
+            <Link :href="currentUserRole === 'super_admin' ? '/platform' : '/dashboard'" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
               Go to Dashboard
-            </router-link>
+            </Link>
           </template>
           <template v-else>
-            <router-link to="/login" class="hidden md:flex text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent transition-colors">
+            <Link href="/login" class="hidden md:flex text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent transition-colors">
               Login
-            </router-link>
-            <router-link to="/signup" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
+            </Link>
+            <Link href="/register" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
               Get Started
-            </router-link>
+            </Link>
           </template>
         </div>
       </div>
@@ -35,7 +35,7 @@
 
     <!-- Main Page Content -->
     <div class="flex-grow">
-      <router-view></router-view>
+      <slot></slot>
     </div>
 
     <!-- Footer Section -->
@@ -69,8 +69,8 @@
           <div class="lg:col-span-2 flex flex-col gap-3">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Product</h4>
             <ul class="flex flex-col gap-2">
-              <li><router-link to="/features" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:translate-x-1 transition-all duration-200 inline-block">Features</router-link></li>
-              <li><router-link to="/pricing" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:translate-x-1 transition-all duration-200 inline-block">Pricing</router-link></li>
+              <li><Link href="/features" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:translate-x-1 transition-all duration-200 inline-block">Features</Link></li>
+              <li><Link href="/pricing" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:translate-x-1 transition-all duration-200 inline-block">Pricing</Link></li>
               <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:translate-x-1 transition-all duration-200 inline-block">Integrations</a></li>
               <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:translate-x-1 transition-all duration-200 inline-block">Security</a></li>
             </ul>
@@ -127,12 +127,14 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import BrandLogo from '../Components/BrandLogo.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
-import { useAppState } from '../Composables/useAppState';
 
-const { isDark, isAuthenticated, currentUserRole } = useAppState();
-const route = useRoute();
-const isRoute = (path) => route.path === path;
+const page = usePage();
+const isAuthenticated = computed(() => !!page.props.auth.user);
+const currentUserRole = computed(() => page.props.auth.user?.roles?.[0] || 'staff');
+
+const isRoute = (path) => page.url === path;
 </script>

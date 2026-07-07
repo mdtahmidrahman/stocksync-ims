@@ -1,4 +1,5 @@
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
 import axios from 'axios';
 
 // Configure Axios defaults for session authentication
@@ -9,30 +10,19 @@ axios.defaults.baseURL = window.location.origin;
 const isDark = ref(false);
 const isMobileMenuOpen = ref(false);
 const isSidebarCollapsed = ref(false);
-const currentUser = ref(null);
-const isAuthenticated = ref(false);
-const isLoading = ref(true);
-const currentUserRole = ref('staff'); // admin, manager, staff
-
-// Fetch the authenticated user from the backend
-const checkAuth = async () => {
-    try {
-        isLoading.value = true;
-        const response = await axios.get('/api/user');
-        currentUser.value = response.data;
-        isAuthenticated.value = true;
-        currentUserRole.value = response.data.role || 'staff';
-    } catch (error) {
-        currentUser.value = null;
-        isAuthenticated.value = false;
-        currentUserRole.value = 'staff';
-    } finally {
-        isLoading.value = false;
-    }
-};
 
 export function useAppState() {
-    onMounted(async () => {
+    const page = usePage();
+
+    const currentUser = computed(() => page.props.auth?.user || null);
+    const isAuthenticated = computed(() => !!page.props.auth?.user);
+    const isLoading = ref(false);
+    const currentUserRole = computed(() => {
+        const roles = page.props.auth?.user?.roles || [];
+        return roles[0] || 'staff';
+    });
+
+    onMounted(() => {
         if (typeof window !== 'undefined') {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -47,9 +37,6 @@ export function useAppState() {
             if (savedSidebar === 'true') {
                 isSidebarCollapsed.value = true;
             }
-
-            // Run initial auth check
-            await checkAuth();
         }
     });
 
@@ -79,42 +66,29 @@ export function useAppState() {
         isMobileMenuOpen.value = false;
     };
 
-    // Perform Laravel Session Login
+    // Perform Laravel Session Login via Inertia
     const login = async (email, password, remember = false) => {
-        // Ensure CSRF Cookie is initialized
-        await axios.get('/sanctum/csrf-cookie');
-        
-        await axios.post('/login', {
+        router.post('/login', {
             email,
             password,
             remember
         });
-
-        // Fetch User details
-        await checkAuth();
     };
 
-    // Perform Laravel Session Logout
+    // Perform Laravel Session Logout via Inertia
     const logout = async () => {
-        await axios.post('/logout');
-        currentUser.value = null;
-        isAuthenticated.value = false;
-        currentUserRole.value = 'staff';
+        router.post('/logout');
     };
 
-    // Register a new user and company
+    // Register a new user and company via Inertia
     const signup = async (name, email, password, password_confirmation, companyName) => {
-        await axios.get('/sanctum/csrf-cookie');
-
-        await axios.post('/register', {
+        router.post('/register', {
             name,
             email,
             password,
             password_confirmation,
             company_name: companyName
         });
-
-        await checkAuth();
     };
 
     return {
@@ -132,6 +106,6 @@ export function useAppState() {
         login,
         logout,
         signup,
-        checkAuth
+        checkAuth: () => {} // Stubbed since Inertia hydrates natively
     };
 }

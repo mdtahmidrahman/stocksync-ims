@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Sales & Invoices</h1>
@@ -40,9 +41,9 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" @click.prevent="statusFilter = 'All Statuses'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="statusFilter === 'All Statuses' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">All Statuses</a>
-                <a href="#" @click.prevent="statusFilter = 'Paid'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="statusFilter === 'Paid' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">Paid</a>
-                <a href="#" @click.prevent="statusFilter = 'Pending'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="statusFilter === 'Pending' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">Pending</a>
+                <a href="#" @click.prevent="statusFilter = 'All Statuses'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="statusFilter === 'All Statuses' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">All Statuses</a>
+                <a href="#" @click.prevent="statusFilter = 'Paid'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="statusFilter === 'Paid' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">Paid</a>
+                <a href="#" @click.prevent="statusFilter = 'Pending'; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="statusFilter === 'Pending' ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">Pending</a>
               </template>
             </Dropdown>
         </div>
@@ -62,7 +63,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="i in 5" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="i in 5" :key="i">
               <td class="p-4 text-sm font-medium text-primary-600 dark:text-primary-400">INV-2024-{{ 1000 + i }}</td>
               <td class="p-4">
                 <div class="font-medium text-gray-900 dark:text-white">Walk-in Customer {{ i }}</div>
@@ -143,10 +144,18 @@
           <div class="flex flex-col gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer (Optional)</label>
-              <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                <option>Walk-in Customer</option>
-                <option>John Doe (john@example.com)</option>
-              </select>
+              <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      <span class="truncate pr-2">Walk-in Customer</span>
+                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Walk-in Customer</a>
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">John Doe (john@example.com)</a>
+                  </template>
+                </Dropdown>
             </div>
             
             <div>
@@ -171,9 +180,11 @@
       </template>
     </Modal>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 import Modal from '../Components/Modal.vue';
 import Dropdown from '../Components/Dropdown.vue';

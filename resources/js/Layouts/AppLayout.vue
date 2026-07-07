@@ -29,7 +29,7 @@
       
       <!-- Main Content Area -->
       <main class="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
-        <router-view></router-view>
+        <slot></slot>
       </main>
     </div>
 

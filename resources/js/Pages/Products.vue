@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <AppLayout>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Products</h1>
       <div class="flex items-center gap-3 self-start sm:self-auto">
@@ -41,7 +41,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="product in products" :key="product.id">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="product in products" :key="product.id">
               <td class="p-4">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0 overflow-hidden">
@@ -61,7 +61,7 @@
               </td>
               <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">${{ parseFloat(product.price).toFixed(2) }}</td>
               <td class="p-4">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ product.stock_level }}</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ product.stock_quantity }}</span>
               </td>
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-2">
@@ -82,6 +82,7 @@
         </div>
       </div>
     </div>
+
     <!-- Add Product Modal -->
     <Modal :show="showAddModal" :scrollable="false" @close="showAddModal = false" @save="saveProduct">
       <template #title>Add New Product</template>
@@ -119,7 +120,7 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="cat in categories" :key="cat.id" @click.prevent="newProduct.category_id = cat.id; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newProduct.category_id === cat.id ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
+                  <a href="#" v-for="cat in categories" :key="cat.id" @click.prevent="newProduct.category_id = cat.id; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="newProduct.category_id === cat.id ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
                 </template>
               </Dropdown>
             </div>
@@ -148,11 +149,18 @@
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Supplier</label>
-                <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                  <option disabled selected>Select...</option>
-                  <option>TechCorp Inc.</option>
-                  <option>Global Supplies Ltd</option>
-                </select>
+                <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      <span class="truncate pr-2">Select...</span>
+                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">TechCorp Inc.</a>
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Global Supplies Ltd</a>
+                  </template>
+                </Dropdown>
               </div>
             </div>
           </div>
@@ -202,10 +210,18 @@
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Supplier</label>
-                <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-                  <option selected>TechCorp Inc.</option>
-                  <option>Global Supplies Ltd</option>
-                </select>
+                <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      <span class="truncate pr-2">TechCorp Inc.</span>
+                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">TechCorp Inc.</a>
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Global Supplies Ltd</a>
+                  </template>
+                </Dropdown>
               </div>
             </div>
           </div>
@@ -222,7 +238,7 @@
             <span class="text-gray-500 dark:text-gray-400">Upload CSV or Excel file</span>
             <a href="#" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">Download Template</a>
           </div>
-          <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
             <div class="w-16 h-16 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center mb-4">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             </div>
@@ -244,11 +260,18 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Product</label>
-            <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm appearance-none">
-              <option disabled selected>Select a base product...</option>
-              <option>Wireless Headphones (WH-1002)</option>
-              <option>Smart Watch (SW-2001)</option>
-            </select>
+            <Dropdown align="left" width="full" fullWidth>
+                  <template #trigger>
+                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                      <span class="truncate pr-2">Select a base product...</span>
+                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                  </template>
+                  <template #content="{ close }">
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Wireless Headphones (WH-1002)</a>
+                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Smart Watch (SW-2001)</a>
+                  </template>
+                </Dropdown>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customization Details</label>
@@ -317,14 +340,26 @@
         </div>
       </template>
     </Modal>
-  </div>
+  </AppLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import Modal from '../Components/Modal.vue';
 import Dropdown from '../Components/Dropdown.vue';
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import AppLayout from '../Layouts/AppLayout.vue';
+import Modal from '../Components/Modal.vue';
+
+defineProps({
+    products: {
+        type: Array,
+        default: () => []
+    },
+    categories: {
+        type: Array,
+        default: () => []
+    }
+});
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -332,8 +367,6 @@ const showBulkUploadModal = ref(false);
 const showCustomProductModal = ref(false);
 const showBarcodeModal = ref(false);
 
-const products = ref([]);
-const categories = ref([]);
 const imageFile = ref(null);
 const imagePreview = ref('');
 
@@ -353,63 +386,29 @@ const newProduct = ref({
     stock_level: 0
 });
 
-const fetchProducts = async () => {
-    try {
-        const response = await axios.get('/api/products');
-        products.value = response.data;
-    } catch (e) {
-        console.error('Failed to fetch products:', e);
-    }
-};
-
-const fetchCategories = async () => {
-    try {
-        const response = await axios.get('/api/categories');
-        categories.value = response.data;
-    } catch (e) {
-        console.error('Failed to fetch categories:', e);
-    }
-};
-
-const saveProduct = async () => {
+const saveProduct = () => {
     if (!newProduct.value.name || !newProduct.value.category_id) return;
-    try {
-        const formData = new FormData();
-        formData.append('name', newProduct.value.name);
-        formData.append('sku', newProduct.value.sku);
-        formData.append('category_id', newProduct.value.category_id);
-        formData.append('price', newProduct.value.price);
-        formData.append('stock_level', newProduct.value.stock_level);
-        if (imageFile.value) {
-            formData.append('image', imageFile.value);
+    
+    router.post('/products', {
+        name: newProduct.value.name,
+        sku: newProduct.value.sku,
+        category_id: newProduct.value.category_id,
+        price: newProduct.value.price,
+        stock_level: newProduct.value.stock_level,
+        image: imageFile.value
+    }, {
+        onSuccess: () => {
+            showAddModal.value = false;
+            newProduct.value = { name: '', sku: '', category_id: '', price: 0, stock_level: 0 };
+            imageFile.value = null;
+            imagePreview.value = '';
         }
-
-        await axios.post('/api/products', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        showAddModal.value = false;
-        newProduct.value = { name: '', sku: '', category_id: '', price: 0, stock_level: 0 };
-        imageFile.value = null;
-        imagePreview.value = '';
-        fetchProducts();
-    } catch (e) {
-        console.error('Failed to save product:', e);
-    }
+    });
 };
 
-const deleteProduct = async (id) => {
+const deleteProduct = (id) => {
     if (confirm('Are you sure you want to delete this product?')) {
-        try {
-            await axios.delete(`/api/products/${id}`);
-            fetchProducts();
-        } catch (e) {
-            console.error('Failed to delete product:', e);
-        }
+        router.delete(`/products/${id}`);
     }
 };
-
-onMounted(() => {
-    fetchProducts();
-    fetchCategories();
-});
 </script>

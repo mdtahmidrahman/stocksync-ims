@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Purchases</h1>
@@ -24,7 +25,7 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" v-for="status in ['All Statuses', 'Received', 'Pending', 'Ordered']" :key="status" @click.prevent="filterStatus = status; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="filterStatus === status ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ status }}</a>
+                <a href="#" v-for="status in ['All Statuses', 'Received', 'Pending', 'Ordered']" :key="status" @click.prevent="filterStatus = status; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="filterStatus === status ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ status }}</a>
               </template>
             </Dropdown>
             <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex-1 sm:flex-none">Export</button>
@@ -47,7 +48,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="i in 5" :key="i">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="i in 5" :key="i">
               <td class="p-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">12 Oct 2024</td>
               <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">PO-2024-{{ 100 + i }}</td>
               <td class="p-4">
@@ -110,7 +111,7 @@
                 </button>
               </template>
               <template #content="{ close }">
-                <a href="#" v-for="sup in ['Demo Company 1', 'Demo Company 2', 'Demo Company 3']" :key="sup" @click.prevent="newSupplier = sup; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="newSupplier === sup ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ sup }}</a>
+                <a href="#" v-for="sup in ['Demo Company 1', 'Demo Company 2', 'Demo Company 3']" :key="sup" @click.prevent="newSupplier = sup; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="newSupplier === sup ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ sup }}</a>
               </template>
             </Dropdown>
           </div>
@@ -170,9 +171,11 @@
       </template>
     </Modal>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 import Modal from '../Components/Modal.vue';
 

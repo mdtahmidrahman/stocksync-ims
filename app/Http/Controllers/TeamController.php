@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class TeamController extends Controller
 {
@@ -19,7 +20,9 @@ class TeamController extends Controller
         // However, if TenantScope isn't applied to User model yet, we explicitly filter here.
         $users = User::where('company_id', Auth::user()->company_id)->get();
         
-        return response()->json($users);
+        return Inertia::render('Roles', [
+            'team' => $users
+        ]);
     }
 
     /**

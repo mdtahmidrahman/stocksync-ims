@@ -1,4 +1,5 @@
 <template>
+  <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Reports & Analytics</h1>
@@ -11,7 +12,7 @@
             </button>
           </template>
           <template #content="{ close }">
-            <a href="#" v-for="range in ['Last 30 Days', 'This Month', 'This Year']" :key="range" @click.prevent="dateRange = range; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" :class="dateRange === range ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ range }}</a>
+            <a href="#" v-for="range in ['Last 30 Days', 'This Month', 'This Year']" :key="range" @click.prevent="dateRange = range; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="dateRange === range ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ range }}</a>
           </template>
         </Dropdown>
         <button class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm">
@@ -106,7 +107,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="i in 5" :key="i">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="i in 5" :key="i">
                 <td class="px-6 py-3 text-sm font-medium text-primary-600 dark:text-primary-400">ITM-{{ 200 + i }}</td>
                 <td class="px-6 py-3 text-sm text-gray-900 dark:text-white">Premium Coffee Beans</td>
                 <td class="px-6 py-3 text-sm text-right">
@@ -121,9 +122,11 @@
       </div>
     </div>
   </div>
+  </AppLayout>
 </template>
 
 <script setup>
+import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
 
 const dateRange = ref('Last 30 Days');

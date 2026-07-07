@@ -1,12 +1,12 @@
 <template>
-  <router-link to="/" class="flex items-center gap-2.5 w-fit transition-transform duration-300 hover:scale-105 origin-left">
+  <Link href="/" class="flex items-center gap-2.5 w-fit transition-transform duration-300 hover:scale-105 origin-left">
     <div :class="[bgClass, sizeClass]" class="rounded-xl overflow-hidden flex items-center justify-center shadow-sm shrink-0 p-1">
       <img src="/images/logo.png" alt="StockSync" class="w-full h-full object-contain" />
     </div>
     <span v-if="!hideText" :class="textClass" style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.02em;">
       StockSync
     </span>
-  </router-link>
+  </Link>
 </template>
 
 <script setup>

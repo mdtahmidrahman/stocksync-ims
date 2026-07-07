@@ -13,9 +13,9 @@
           <h2 class="mt-8 text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Welcome back</h2>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Don't have an account?
-            <router-link to="/signup" class="font-semibold text-primary-600 hover:text-primary-500 transition-colors">
+            <Link href="/register" class="font-semibold text-primary-600 hover:text-primary-500 transition-colors">
               Create an account
-            </router-link>
+            </Link>
           </p>
         </div>
               
@@ -55,7 +55,7 @@
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                   </div>
-                  <input id="email" v-model="email" name="email" type="email" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="you@company.com" />
+                  <input id="email" v-model="email" name="email" type="email" required autocomplete="email" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="you@company.com" />
                 </div>
               </div>
 
@@ -65,7 +65,7 @@
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   </div>
-                  <input id="password" v-model="password" name="password" type="password" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="••••••••" />
+                  <input id="password" v-model="password" name="password" type="password" required autocomplete="current-password" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="••••••••" />
                 </div>
               </div>
 
@@ -130,32 +130,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import BrandLogo from '../Components/BrandLogo.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
-import { useAppState } from '../Composables/useAppState';
 
-const router = useRouter();
-const { login } = useAppState();
-
+const page = usePage();
 const email = ref('');
 const password = ref('');
 const remember = ref(false);
-const error = ref('');
 const isSubmitting = ref(false);
 
-const handleLogin = async () => {
+const error = computed({
+    get: () => {
+        const errors = page.props.errors || {};
+        return Object.values(errors)[0] || '';
+    },
+    set: (val) => {
+        if (!val) page.props.errors = {};
+    }
+});
+
+const handleLogin = () => {
     error.value = '';
     isSubmitting.value = true;
-    try {
-        await login(email.value, password.value, remember.value);
-        router.push('/dashboard');
-    } catch (err) {
-        console.error(err);
-        error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
-    } finally {
-        isSubmitting.value = false;
-    }
+    router.post('/login', {
+        email: email.value,
+        password: password.value,
+        remember: remember.value
+    }, {
+        onFinish: () => {
+            isSubmitting.value = false;
+        }
+    });
 };
 </script>
