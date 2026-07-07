@@ -16,14 +16,17 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->has('stock_level')) {
+            $request->merge(['stock_quantity' => $request->stock_level]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => [
                 'required', 
                 'string', 
                 'max:255', 
-                // Ensure SKU is unique within this specific company
-                Rule::unique('products')->where(function ($query) use ($request) {
+                Rule::unique('products')->where(function ($query) {
                     return $query->where('company_id', auth()->user()->company_id);
                 })
             ],
@@ -32,9 +35,19 @@ class ProductController extends Controller
             'price' => 'numeric|min:0',
             'cost' => 'numeric|min:0',
             'stock_quantity' => 'integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $product = Product::create($request->all());
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+        }
+
+        $productData = $request->except(['image', 'stock_level']);
+        $productData['image_path'] = $imagePath;
+        $productData['company_id'] = auth()->user()->company_id;
+
+        $product = Product::create($productData);
         $product->load('category');
 
         return response()->json($product, 201);
@@ -47,13 +60,17 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        if ($request->has('stock_level')) {
+            $request->merge(['stock_quantity' => $request->stock_level]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => [
                 'required', 
                 'string', 
                 'max:255', 
-                Rule::unique('products')->where(function ($query) use ($request) {
+                Rule::unique('products')->where(function ($query) {
                     return $query->where('company_id', auth()->user()->company_id);
                 })->ignore($product->id)
             ],
@@ -62,6 +79,7 @@ class ProductController extends Controller
             'price' => 'numeric|min:0',
             'cost' => 'numeric|min:0',
             'stock_quantity' => 'integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $product->update($request->all());

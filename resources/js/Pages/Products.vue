@@ -44,8 +44,9 @@
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" v-for="product in products" :key="product.id">
               <td class="p-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0 overflow-hidden">
+                    <img v-if="product.image_path" :src="`/storage/${product.image_path}`" class="w-full h-full object-cover" />
+                    <svg v-else class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                   </div>
                   <div>
                     <div class="font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ product.name }}</div>
@@ -82,17 +83,21 @@
       </div>
     </div>
     <!-- Add Product Modal -->
-    <Modal :show="showAddModal" :scrollable="false" @close="showAddModal = false" @save="showAddModal = false">
+    <Modal :show="showAddModal" :scrollable="false" @close="showAddModal = false" @save="saveProduct">
       <template #title>Add New Product</template>
       <template #body>
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Image</label>
             <div class="flex items-center gap-4">
-              <div class="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex items-center justify-center text-gray-400">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <div class="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden relative">
+                <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+                <svg v-else class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
-              <button class="text-sm text-primary-600 font-medium">Upload Image</button>
+              <div class="relative">
+                <input type="file" accept="image/*" @change="handleImageUpload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <button type="button" class="text-sm text-primary-600 font-medium">Upload Image</button>
+              </div>
             </div>
           </div>
           <div>
@@ -329,6 +334,16 @@ const showBarcodeModal = ref(false);
 
 const products = ref([]);
 const categories = ref([]);
+const imageFile = ref(null);
+const imagePreview = ref('');
+
+const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        imageFile.value = file;
+        imagePreview.value = URL.createObjectURL(file);
+    }
+};
 
 const newProduct = ref({
     name: '',
@@ -359,9 +374,23 @@ const fetchCategories = async () => {
 const saveProduct = async () => {
     if (!newProduct.value.name || !newProduct.value.category_id) return;
     try {
-        await axios.post('/api/products', newProduct.value);
+        const formData = new FormData();
+        formData.append('name', newProduct.value.name);
+        formData.append('sku', newProduct.value.sku);
+        formData.append('category_id', newProduct.value.category_id);
+        formData.append('price', newProduct.value.price);
+        formData.append('stock_level', newProduct.value.stock_level);
+        if (imageFile.value) {
+            formData.append('image', imageFile.value);
+        }
+
+        await axios.post('/api/products', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
         showAddModal.value = false;
         newProduct.value = { name: '', sku: '', category_id: '', price: 0, stock_level: 0 };
+        imageFile.value = null;
+        imagePreview.value = '';
         fetchProducts();
     } catch (e) {
         console.error('Failed to save product:', e);
