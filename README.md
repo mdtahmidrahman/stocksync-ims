@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="public/images/logo-bg-transparent.png" alt="StockSync Logo" width="150" />
+</div>
+
 # StockSync - Inventory Management System
 
 StockSync is a modern, high-performance Inventory Management System (IMS) designed for multi-tenant businesses. It features a stunning, fully responsive Single Page Application (SPA) interface with a robust backend architecture.
@@ -20,7 +24,7 @@ StockSync is a modern, high-performance Inventory Management System (IMS) design
 - [x] **Inertia.js SPA:** Lightning-fast page transitions without full page reloads, retaining the simplicity of server-side routing.
 - [x] **Multi-Tenancy:** Built-in `TenantScope` ensuring data isolation across different organizations using a global `company_id` scope.
 - [x] **Role-Based Access Control (RBAC):** Integrated Spatie permissions system to seamlessly manage access levels (e.g., Super Admin, Company Admin, Manager, Staff).
-- [ ] **Multi-Tenancy Enforcement:** Automatically inject the `company_id` into models upon creation via Model Observers or Traits.
+- [x] **Multi-Tenancy Enforcement:** Automatically inject the `company_id` into models upon creation via Model Observers or Traits.
 
 ### Premium UI/UX Design
 - [x] **Dark Mode Support:** First-class dark mode implementation across all components with subtle glassmorphism effects and tailored color palettes.

@@ -16,9 +16,8 @@ class TeamController extends Controller
      */
     public function index()
     {
-        // TenantScope automatically filters users by the logged-in user's company_id
-        // However, if TenantScope isn't applied to User model yet, we explicitly filter here.
-        $users = User::where('company_id', Auth::user()->company_id)->get();
+        // The TenantScope automatically filters users by the current user's company_id
+        $users = User::all();
         
         return Inertia::render('Roles', [
             'team' => $users
