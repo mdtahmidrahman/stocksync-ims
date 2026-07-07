@@ -35,6 +35,10 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        if ($request->user()->isSuperAdmin()) {
+            return redirect()->intended('/platform');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

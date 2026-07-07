@@ -10,8 +10,8 @@
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <template v-if="isAuthenticated">
-          <Link href="/dashboard" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg shadow-primary-500/20 active:translate-y-0">
-            Go to Dashboard
+          <Link :href="currentUserRole === 'super_admin' ? '/platform' : '/dashboard'" class="w-full sm:w-auto bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-700 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg shadow-primary-500/20 active:translate-y-0">
+            {{ currentUserRole === 'super_admin' ? 'Go to Platform' : 'Go to Dashboard' }}
           </Link>
         </template>
         <template v-else>
@@ -43,5 +43,7 @@
 <script setup>
 import PublicLayout from '../Layouts/PublicLayout.vue';
 import { useAppState } from '../Composables/useAppState';
-const { isDark, isAuthenticated } = useAppState();
+import { Link } from '@inertiajs/vue3';
+
+const { isDark, isAuthenticated, currentUserRole } = useAppState();
 </script>

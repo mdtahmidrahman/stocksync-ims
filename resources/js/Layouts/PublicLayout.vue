@@ -18,7 +18,7 @@
           <ThemeToggle />
           <template v-if="isAuthenticated">
             <Link :href="currentUserRole === 'super_admin' ? '/platform' : '/dashboard'" class="bg-primary-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
-              Go to Dashboard
+              {{ currentUserRole === 'super_admin' ? 'Go to Platform' : 'Go to Dashboard' }}
             </Link>
           </template>
           <template v-else>

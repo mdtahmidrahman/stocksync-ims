@@ -54,6 +54,8 @@ class RegisteredUserController extends Controller
                 'company_id' => $company->id,
             ]);
 
+            $user->assignRole('admin');
+
             return $user;
         });
 
