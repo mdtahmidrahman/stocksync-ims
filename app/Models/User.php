@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password', 'role', 'company_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * Get the attributes that should be cast.
@@ -37,21 +38,21 @@ class User extends Authenticatable
 
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'super_admin';
+        return $this->hasRole('super_admin');
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->hasRole('admin');
     }
 
     public function isManager(): bool
     {
-        return $this->role === 'manager';
+        return $this->hasRole('manager');
     }
 
     public function isStaff(): bool
     {
-        return $this->role === 'staff';
+        return $this->hasRole('staff');
     }
 }
