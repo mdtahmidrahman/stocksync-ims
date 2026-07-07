@@ -38,18 +38,24 @@ Route::middleware(['auth'])->group(function () {
     })->middleware('role:super_admin');
 
     // Products (Web / Inertia)
+    Route::get('/products/export', [ProductController::class, 'export'])->middleware('role:admin|manager');
+    Route::post('/products/import', [ProductController::class, 'import'])->middleware('role:admin|manager');
     Route::get('/products', [ProductController::class, 'index'])->middleware('role:admin|manager');
     Route::post('/products', [ProductController::class, 'store'])->middleware('role:admin|manager');
     Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('role:admin|manager');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('role:admin|manager');
 
     // Categories (Web / Inertia)
+    Route::get('/categories/export', [CategoryController::class, 'export'])->middleware('role:admin|manager');
+    Route::post('/categories/import', [CategoryController::class, 'import'])->middleware('role:admin|manager');
     Route::get('/categories', [CategoryController::class, 'index'])->middleware('role:admin|manager');
     Route::post('/categories', [CategoryController::class, 'store'])->middleware('role:admin|manager');
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->middleware('role:admin|manager');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->middleware('role:admin|manager');
 
     // Warehouses (Web / Inertia)
+    Route::get('/warehouses/export', [WarehouseController::class, 'export'])->middleware('role:admin|manager');
+    Route::post('/warehouses/import', [WarehouseController::class, 'import'])->middleware('role:admin|manager');
     Route::get('/warehouses', [WarehouseController::class, 'index'])->middleware('role:admin|manager');
     Route::post('/warehouses', [WarehouseController::class, 'store'])->middleware('role:admin|manager');
     Route::put('/warehouses/{warehouse}', [WarehouseController::class, 'update'])->middleware('role:admin|manager');
