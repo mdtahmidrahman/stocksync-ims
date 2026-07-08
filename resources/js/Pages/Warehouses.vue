@@ -19,6 +19,16 @@
     </div>
 
     <div v-if="activeTab === 'locations'">
+      <!-- Toolbar -->
+      <div class="flex justify-between items-center mb-6">
+        <div class="relative w-full sm:w-64">
+          <input v-model="search" type="text" placeholder="Search warehouses..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-black text-gray-900 dark:text-white" />
+          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+            <a :href="`/warehouses/export?search=${search}`" class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center flex-1 sm:flex-none">Export</a>
+        </div>
+      </div>
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
@@ -37,14 +47,19 @@
 
       <!-- Grid View -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="(wh, i) in warehouses" :key="i" class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col transition-colors">
+        <div v-for="(wh, i) in warehouses.data" :key="wh.id" class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col transition-colors">
           <div class="flex justify-between items-start mb-4">
             <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-800">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
             </div>
-            <button @click="deleteWarehouse(wh.id)" class="text-gray-400 hover:text-red-600 transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <button @click="openEditModal(wh)" class="text-gray-400 hover:text-blue-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </button>
+              <button @click="deleteWarehouse(wh.id)" class="text-gray-400 hover:text-red-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
           </div>
           
           <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ wh.name }}</h3>
@@ -71,6 +86,15 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="mt-6 p-4 border border-gray-100 dark:border-gray-800 rounded-xl flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900">
+        <span>Showing {{ warehouses.from || 0 }} to {{ warehouses.to || 0 }} of {{ warehouses.total }} results</span>
+        <div class="flex gap-1">
+          <component :is="warehouses.prev_page_url ? 'Link' : 'button'" :href="warehouses.prev_page_url" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" :class="{ 'opacity-50 cursor-not-allowed': !warehouses.prev_page_url }" :disabled="!warehouses.prev_page_url">Previous</component>
+          <component :is="warehouses.next_page_url ? 'Link' : 'button'" :href="warehouses.next_page_url" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" :class="{ 'opacity-50 cursor-not-allowed': !warehouses.next_page_url }" :disabled="!warehouses.next_page_url">Next</component>
         </div>
       </div>
     </div>
@@ -194,24 +218,51 @@
     </div>
 
     <!-- Add Warehouse Modal -->
-    <Modal :show="showAddModal" @close="showAddModal = false" @save="saveWarehouse">
+    <Modal :show="showAddModal" @close="showAddModal = false">
       <template #title>Add New Warehouse</template>
       <template #body>
-        <div class="space-y-4">
+        <form @submit.prevent="saveWarehouse" id="addWarehouseForm" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Warehouse Name</label>
-            <input v-model="newWarehouse.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Northeast Distribution Center" />
+            <input v-model="addForm.name" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. Northeast Distribution Center" />
+            <div v-if="addForm.errors.name" class="text-red-500 text-xs mt-1">{{ addForm.errors.name }}</div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address / Location</label>
-            <input v-model="newWarehouse.location" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="123 Industrial Parkway, Suite A" />
+            <input v-model="addForm.location" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="123 Industrial Parkway, Suite A" />
+            <div v-if="addForm.errors.location" class="text-red-500 text-xs mt-1">{{ addForm.errors.location }}</div>
           </div>
-        </div>
+        </form>
       </template>
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
-          <button @click="showAddModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
-          <button @click="saveWarehouse" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm">Save</button>
+          <button @click="showAddModal = false" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
+          <button form="addWarehouseForm" type="submit" :disabled="addForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Save</button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Edit Warehouse Modal -->
+    <Modal :show="showEditModal" @close="showEditModal = false">
+      <template #title>Edit Warehouse</template>
+      <template #body>
+        <form @submit.prevent="updateWarehouse" id="editWarehouseForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Warehouse Name</label>
+            <input v-model="editForm.name" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+            <div v-if="editForm.errors.name" class="text-red-500 text-xs mt-1">{{ editForm.errors.name }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address / Location</label>
+            <input v-model="editForm.location" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+            <div v-if="editForm.errors.location" class="text-red-500 text-xs mt-1">{{ editForm.errors.location }}</div>
+          </div>
+        </form>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <button @click="showEditModal = false" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
+          <button form="editWarehouseForm" type="submit" :disabled="editForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Warehouse</button>
         </div>
       </template>
     </Modal>
@@ -281,40 +332,84 @@
     </Modal>
   </AppLayout>
 </template>
-
 <script setup>
 import Dropdown from '../Components/Dropdown.vue';
-import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { router, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
+import debounce from 'lodash/debounce';
 
-defineProps({
+const props = defineProps({
     warehouses: {
-        type: Array,
-        default: () => []
+        type: Object,
+        default: () => ({ data: [], total: 0, from: 0, to: 0, prev_page_url: null, next_page_url: null })
+    },
+    filters: {
+        type: Object,
+        default: () => ({})
     }
 });
 
+const search = ref(props.filters.search || '');
+
+watch(search, debounce((value) => {
+    router.get('/warehouses', { search: value }, {
+        preserveState: true,
+        replace: true
+    });
+}, 300));
+
 const showAddModal = ref(false);
+const showEditModal = ref(false);
 const showTransferModal = ref(false);
 const activeTab = ref('locations');
+const editingWarehouseId = ref(null);
 
-const newWarehouse = ref({ name: '', location: '', is_active: true });
+const addForm = useForm({
+    name: '',
+    location: '',
+    is_active: true
+});
+
+const editForm = useForm({
+    name: '',
+    location: '',
+    capacity: 0,
+    is_active: true
+});
+
+const openEditModal = (wh) => {
+    editingWarehouseId.value = wh.id;
+    editForm.name = wh.name;
+    editForm.location = wh.location;
+    editForm.is_active = wh.is_active;
+    showEditModal.value = true;
+};
 
 const saveWarehouse = () => {
-    if (!newWarehouse.value.name || !newWarehouse.value.location) return;
-    router.post('/warehouses', newWarehouse.value, {
+    addForm.post('/warehouses', {
+        preserveScroll: true,
         onSuccess: () => {
             showAddModal.value = false;
-            newWarehouse.value = { name: '', location: '', is_active: true };
+            addForm.reset();
+        }
+    });
+};
+
+const updateWarehouse = () => {
+    editForm.put(`/warehouses/${editingWarehouseId.value}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            showEditModal.value = false;
+            editForm.reset();
         }
     });
 };
 
 const deleteWarehouse = (id) => {
     if (confirm('Are you sure you want to delete this warehouse?')) {
-        router.delete(`/warehouses/${id}`);
+        router.delete(`/warehouses/${id}`, { preserveScroll: true });
     }
 };
 </script>
