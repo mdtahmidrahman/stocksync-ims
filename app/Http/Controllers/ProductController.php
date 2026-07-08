@@ -6,12 +6,27 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with('category')->get();
+        $query = Product::with('category');
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $products = $query->latest()->paginate(10)->withQueryString();
 
         if ($request->wantsJson()) {
             return response()->json($products);
@@ -19,7 +34,8 @@ class ProductController extends Controller
 
         return Inertia::render('Products', [
             'products' => $products,
-            'categories' => \App\Models\Category::all()
+            'categories' => Category::all(),
+            'filters' => $request->only(['search', 'category_id'])
         ]);
     }
 
@@ -79,12 +95,13 @@ class ProductController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => [
+            'sku' =>
+            [
                 'required', 
                 'string', 
                 'max:255', 
-                Rule::unique('products')->where(function ($query) use ($product) {
-                    return $query->where('company_id', auth()->user()->company_id)->ignore($product->id);
+                Rule::unique('products')->ignore($product->id)->where(function ($query) {
+                    return $query->where('company_id', auth()->user()->company_id);
                 })
             ],
             'category_id' => 'nullable|exists:categories,id',
@@ -107,6 +124,10 @@ class ProductController extends Controller
 
     public function destroy(Request $request, Product $product)
     {
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+
         $product->delete();
 
         if ($request->wantsJson()) {
@@ -114,5 +135,83 @@ class ProductController extends Controller
         }
 
         return redirect()->back()->with('success', 'Product deleted successfully.');
+    }
+
+    public function export(Request $request)
+    {
+        $query = Product::with('category');
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $products = $query->latest()->get();
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=products.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = ['ID', 'Name', 'SKU', 'Category', 'Price', 'Stock Level', 'Created At'];
+
+        $callback = function() use($products, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($products as $product) {
+                $row['ID'] = $product->id;
+                $row['Name'] = $product->name;
+                $row['SKU'] = $product->sku;
+                $row['Category'] = $product->category ? $product->category->name : 'Uncategorized';
+                $row['Price'] = $product->price;
+                $row['Stock Level'] = $product->stock_quantity;
+                $row['Created At'] = $product->created_at;
+
+                fputcsv($file, array($row['ID'], $row['Name'], $row['SKU'], $row['Category'], $row['Price'], $row['Stock Level'], $row['Created At']));
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt'
+        ]);
+
+        $file = $request->file('file');
+        $fileHandle = fopen($file->getPathname(), 'r');
+        $header = fgetcsv($fileHandle);
+
+        while (($row = fgetcsv($fileHandle)) !== false) {
+            // Assume CSV format: Name, SKU, Category ID, Price, Stock Level
+            if (count($row) >= 5) {
+                Product::updateOrCreate(
+                    ['sku' => $row[1]], // Update by SKU
+                    [
+                        'name' => $row[0],
+                        'category_id' => $row[2] ?: null,
+                        'price' => is_numeric($row[3]) ? $row[3] : 0,
+                        'stock_quantity' => is_numeric($row[4]) ? $row[4] : 0,
+                    ]
+                );
+            }
+        }
+
+        fclose($fileHandle);
+
+        return redirect()->back()->with('success', 'Products imported successfully.');
     }
 }

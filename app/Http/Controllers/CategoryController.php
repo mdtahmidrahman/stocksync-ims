@@ -10,14 +10,22 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::all();
+        $query = Category::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+
+        $categories = $query->latest()->paginate(10)->withQueryString();
 
         if ($request->wantsJson()) {
             return response()->json($categories);
         }
 
         return Inertia::render('Categories', [
-            'categories' => $categories
+            'categories' => $categories,
+            'filters' => $request->only(['search'])
         ]);
     }
 
@@ -67,5 +75,69 @@ class CategoryController extends Controller
         }
 
         return redirect()->back()->with('success', 'Category deleted successfully.');
+    }
+
+    public function export(Request $request)
+    {
+        $query = Category::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+
+        $categories = $query->latest()->get();
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=categories.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = ['ID', 'Name', 'Description', 'Created At'];
+
+        $callback = function() use($categories, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($categories as $category) {
+                $row['ID'] = $category->id;
+                $row['Name'] = $category->name;
+                $row['Description'] = $category->description;
+                $row['Created At'] = $category->created_at;
+
+                fputcsv($file, array($row['ID'], $row['Name'], $row['Description'], $row['Created At']));
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt'
+        ]);
+
+        $file = $request->file('file');
+        $fileHandle = fopen($file->getPathname(), 'r');
+        $header = fgetcsv($fileHandle);
+
+        while (($row = fgetcsv($fileHandle)) !== false) {
+            // Assume CSV format: Name, Description
+            if (count($row) >= 2) {
+                Category::updateOrCreate(
+                    ['name' => $row[0]],
+                    ['description' => $row[1]]
+                );
+            }
+        }
+
+        fclose($fileHandle);
+
+        return redirect()->back()->with('success', 'Categories imported successfully.');
     }
 }
