@@ -68,7 +68,7 @@
                   Active
                 </span>
               </td>
-              <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ i === 0 ? 'Just now' : i + ' days ago' }}</td>
+              <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ user.last_login_human || 'Never logged in' }}</td>
               <td class="p-4 text-right whitespace-nowrap">
                 <button @click="openEditModal(user)" class="text-primary-600 hover:text-primary-800 dark:hover:text-primary-400 text-sm font-medium transition-colors">
                   Edit Access

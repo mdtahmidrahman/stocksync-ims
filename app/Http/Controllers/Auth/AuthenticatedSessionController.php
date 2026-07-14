@@ -28,12 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->wantsJson()) {
-            return response()->json([
-                'user' => $request->user(),
-                'message' => 'Logged in successfully.',
-            ]);
-        }
+        $request->user()->update([
+            'last_login_at' => now(),
+        ]);
 
         if ($request->user()->isSuperAdmin()) {
             return redirect()->intended('/platform');
@@ -52,12 +49,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => 'Logged out successfully.',
-            ]);
-        }
 
         return redirect('/');
     }

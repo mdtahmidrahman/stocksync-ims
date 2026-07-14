@@ -17,7 +17,10 @@ class TeamController extends Controller
     public function index()
     {
         // The TenantScope automatically filters users by the current user's company_id
-        $users = User::all();
+        $users = User::all()->map(function ($user) {
+            $user->last_login_human = $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never logged in';
+            return $user;
+        });
         
         return Inertia::render('Roles', [
             'team' => $users
