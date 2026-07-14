@@ -91,7 +91,7 @@
           <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Spent</p>
-              <p class="text-lg font-bold text-gray-900 dark:text-white">$45,200.00</p>
+              <p class="text-lg font-bold text-gray-900 dark:text-white">{{ currencySymbol }}45,200.00</p>
             </div>
             <button class="text-primary-600 hover:text-primary-800 text-sm font-medium">Download PDF</button>
           </div>
@@ -109,7 +109,7 @@
                 <tr v-for="i in 4" :key="i">
                   <td class="p-3 text-gray-900 dark:text-white">Oct {{ 15 - i }}, 2024</td>
                   <td class="p-3 text-primary-600 dark:text-primary-400">PO-100{{ i }}</td>
-                  <td class="p-3 text-right font-medium text-gray-900 dark:text-white">${{ 1200 * i }}.00</td>
+                  <td class="p-3 text-right font-medium text-gray-900 dark:text-white">{{ currencySymbol }}{{ 1200 * i }}.00</td>
                 </tr>
               </tbody>
             </table>
@@ -128,6 +128,9 @@
 import Dropdown from '../Components/Dropdown.vue';
 import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);

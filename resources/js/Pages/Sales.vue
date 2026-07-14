@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
       <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
         <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales Today</div>
-        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">$4,250.00</div>
+        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ currencySymbol }}4,250.00</div>
       </div>
       <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
         <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Invoices Generated</div>
@@ -21,7 +21,7 @@
       </div>
       <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
         <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Payments</div>
-        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">$850.00</div>
+        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ currencySymbol }}850.00</div>
       </div>
     </div>
 
@@ -69,7 +69,7 @@
                 <div class="font-medium text-gray-900 dark:text-white">Walk-in Customer {{ i }}</div>
               </td>
               <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">Today, 10:{{ 10 + i }} AM</td>
-              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">${{ 120 * i }}.00</td>
+              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">{{ currencySymbol }}{{ 120 * i }}.00</td>
               <td class="p-4">
                 <span :class="i % 3 === 0 ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300' : 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                   {{ i % 3 === 0 ? 'Pending' : 'Paid' }}
@@ -114,7 +114,7 @@
                           <button class="w-6 h-6 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center">+</button>
                         </div>
                       </td>
-                      <td class="py-3 text-right font-medium">$129.99</td>
+                      <td class="py-3 text-right font-medium">{{ currencySymbol }}129.99</td>
                       <td class="py-3 text-right"><button class="text-red-500 hover:text-red-700"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></td>
                     </tr>
                     <tr class="text-sm">
@@ -126,16 +126,16 @@
                           <button class="w-6 h-6 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center">+</button>
                         </div>
                       </td>
-                      <td class="py-3 text-right font-medium">$39.98</td>
+                      <td class="py-3 text-right font-medium">{{ currencySymbol }}39.98</td>
                       <td class="py-3 text-right"><button class="text-red-500 hover:text-red-700"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div class="bg-white dark:bg-gray-900 p-4 border-t border-gray-200 dark:border-gray-800 text-sm">
-                <div class="flex justify-between mb-1"><span class="text-gray-500">Subtotal</span><span class="font-medium">$169.97</span></div>
-                <div class="flex justify-between mb-1"><span class="text-gray-500">Tax (8%)</span><span class="font-medium">$13.60</span></div>
-                <div class="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 text-lg font-bold"><span class="text-gray-900 dark:text-white">Total</span><span class="text-primary-600 dark:text-primary-400">$183.57</span></div>
+                <div class="flex justify-between mb-1"><span class="text-gray-500">Subtotal</span><span class="font-medium">{{ currencySymbol }}169.97</span></div>
+                <div class="flex justify-between mb-1"><span class="text-gray-500">Tax (8%)</span><span class="font-medium">{{ currencySymbol }}13.60</span></div>
+                <div class="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 text-lg font-bold"><span class="text-gray-900 dark:text-white">Total</span><span class="text-primary-600 dark:text-primary-400">{{ currencySymbol }}183.57</span></div>
               </div>
             </div>
           </div>
@@ -186,6 +186,9 @@
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 import Modal from '../Components/Modal.vue';
 import Dropdown from '../Components/Dropdown.vue';
 

@@ -30,7 +30,7 @@
         </div>
         <div>
           <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Purchase</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">$45,231.00</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}45,231.00</div>
         </div>
       </div>
       <!-- Card 2 -->
@@ -40,7 +40,7 @@
         </div>
         <div>
           <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">$82,549.00</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}82,549.00</div>
         </div>
       </div>
       <!-- Card 3 -->
@@ -50,7 +50,7 @@
         </div>
         <div>
           <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Purchase Due</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">$4,230.00</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}4,230.00</div>
         </div>
       </div>
       <!-- Card 4 -->
@@ -60,7 +60,7 @@
         </div>
         <div>
           <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Sales Due</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">$1,120.00</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}1,120.00</div>
         </div>
       </div>
     </div>
@@ -127,6 +127,9 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 import { ref } from 'vue';
 
 const dateRange = ref('Last 30 Days');

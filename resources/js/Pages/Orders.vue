@@ -47,7 +47,7 @@
                   Pending
                 </span>
               </td>
-              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">${{ 100 * i }}.00</td>
+              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">{{ currencySymbol }}{{ 100 * i }}.00</td>
               <td class="p-4 text-right whitespace-nowrap">
                 <button @click="showViewModal = true" class="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 text-sm font-medium">View</button>
               </td>
@@ -83,7 +83,7 @@
                 </Dropdown>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount ($)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount ({{ currencySymbol }})</label>
               <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0.00" />
             </div>
           </div>
@@ -125,6 +125,9 @@
 import Dropdown from '../Components/Dropdown.vue';
 import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 import Modal from '../Components/Modal.vue';
 
 const showAddModal = ref(false);

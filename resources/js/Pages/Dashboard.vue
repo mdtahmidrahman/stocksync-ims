@@ -37,7 +37,7 @@
           </div>
           <div>
             <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">Monthly Sales</div>
-            <div class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">$45,231.89</div>
+            <div class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ currencySymbol }}45,231.89</div>
           </div>
         </div>
 
@@ -279,6 +279,9 @@
 <script setup>
 import { ref } from 'vue';
 import AppLayout from '../Layouts/AppLayout.vue';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 import { useAppState } from '../Composables/useAppState';
 
 const { currentUser } = useAppState();

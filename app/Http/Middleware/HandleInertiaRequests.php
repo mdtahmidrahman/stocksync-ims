@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\Company;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -44,7 +45,9 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'roles' => $request->user()->getRoleNames(),
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
+                    'company_id' => $request->user()->company_id,
                 ] : null,
+                'company' => $request->user() ? Company::find($request->user()->company_id)->only(['name', 'currency']) : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

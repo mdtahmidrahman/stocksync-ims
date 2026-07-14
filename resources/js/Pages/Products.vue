@@ -81,7 +81,7 @@
                   {{ product.category?.name || 'Uncategorized' }}
                 </span>
               </td>
-              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">${{ parseFloat(product.price).toFixed(2) }}</td>
+              <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap">{{ currencySymbol }}{{ parseFloat(product.price).toFixed(2) }}</td>
               <td class="p-4">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ product.stock_quantity }}</span>
               </td>
@@ -152,7 +152,7 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ($)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ({{ currencySymbol }})</label>
               <input v-model="addForm.price" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0.00" />
             </div>
             <div>
@@ -219,7 +219,7 @@
               <div v-if="editForm.errors.sku" class="text-red-500 text-xs mt-1">{{ editForm.errors.sku }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ($)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ({{ currencySymbol }})</label>
               <input v-model="editForm.price" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
             </div>
           </div>
@@ -323,11 +323,11 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Price ($)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Price ({{ currencySymbol }})</label>
               <input type="number" value="129.99" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 sm:text-sm cursor-not-allowed" disabled />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customization Surcharge ($)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customization Surcharge ({{ currencySymbol }})</label>
               <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="45.00" />
             </div>
           </div>
@@ -390,7 +390,10 @@
 <script setup>
 import Dropdown from '../Components/Dropdown.vue';
 import { ref, watch } from 'vue';
-import { router, useForm, Link } from '@inertiajs/vue3';
+import { router, useForm, Link, usePage } from '@inertiajs/vue3';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
 import debounce from 'lodash/debounce';

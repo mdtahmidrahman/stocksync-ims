@@ -64,12 +64,12 @@
                 <Dropdown align="left" width="full" fullWidth>
                   <template #trigger>
                     <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
-                      {{ defaultCurrency }}
+                      {{ form.currency }}
                       <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                   </template>
                   <template #content="{ close }">
-                    <a href="#" v-for="currency in ['USD ($)', 'EUR (â‚¬)', 'GBP (Â£)']" :key="currency" @click.prevent="defaultCurrency = currency; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="defaultCurrency === currency ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ currency }}</a>
+                    <a href="#" v-for="currency in availableCurrencies" :key="currency" @click.prevent="form.currency = currency; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="form.currency === currency ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ currency }}</a>
                   </template>
                 </Dropdown>
               </div>
@@ -94,7 +94,7 @@
             </div>
           </div>
           <div class="px-6 py-4 bg-gray-50 dark:bg-black/50 border-t border-gray-100 dark:border-gray-800 flex justify-end">
-            <button class="bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm">
+            <button @click="saveSettings" :disabled="form.processing" class="bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
               Save Changes
             </button>
           </div>
@@ -140,9 +140,37 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
+import Dropdown from '../Components/Dropdown.vue';
 import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+
+const props = defineProps({
+    company: Object
+});
 
 const activeTab = ref('general');
-const defaultCurrency = ref('USD ($)');
 const timezone = ref('America/New_York');
+
+const form = useForm({
+    currency: props.company?.currency || 'USD ($)'
+});
+
+const availableCurrencies = [
+    'USD ($)', 
+    'EUR (€)', 
+    'GBP (£)', 
+    'BDT (৳)',
+    'INR (₹)',
+    'JPY (¥)',
+    'CAD ($)',
+    'AUD ($)',
+    'CHF (Fr)',
+    'CNY (¥)'
+];
+
+const saveSettings = () => {
+    form.post('/settings', {
+        preserveScroll: true
+    });
+};
 </script>

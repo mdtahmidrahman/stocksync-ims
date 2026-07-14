@@ -15,6 +15,7 @@ class Company extends Model
         'phone',
         'address',
         'is_active',
+        'currency',
     ];
 
     /**

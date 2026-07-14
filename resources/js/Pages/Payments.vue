@@ -57,7 +57,7 @@
                 </div>
               </td>
               <td class="p-4 text-gray-900 dark:text-white font-medium whitespace-nowrap" :class="i % 2 === 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                {{ i % 2 === 0 ? '+' : '-' }}${{ 450 * i }}.00
+                {{ i % 2 === 0 ? '+' : '-' }}{{ currencySymbol }}{{ 450 * i }}.00
               </td>
               <td class="p-4">
                 <span v-if="i !== 3" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
@@ -84,6 +84,9 @@
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
 import { ref } from 'vue';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 
 const paymentType = ref('All Types');
 </script>
