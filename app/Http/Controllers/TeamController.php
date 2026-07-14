@@ -48,6 +48,8 @@ class TeamController extends Controller
             'company_id' => Auth::user()->company_id,
         ]);
 
+        $user->assignRole($request->role);
+
         return response()->json([
             'message' => 'Team member added successfully. Default password is "password".',
             'user' => $user
@@ -76,6 +78,8 @@ class TeamController extends Controller
         $user->update([
             'role' => $request->role,
         ]);
+
+        $user->syncRoles([$request->role]);
 
         return response()->json(['message' => 'Team member updated successfully.']);
     }
