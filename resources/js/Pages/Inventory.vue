@@ -26,9 +26,9 @@
     </div>
 
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
         <table class="w-full text-left border-collapse">
-          <thead>
+          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-black/90">
             <tr class="bg-gray-50 dark:bg-black/50 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
               <th class="p-4 font-semibold whitespace-nowrap">SKU / Item</th>
               <th class="p-4 font-semibold whitespace-nowrap">Location</th>

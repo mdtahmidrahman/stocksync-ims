@@ -21,13 +21,10 @@
       </div>
 
       <!-- Table -->
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
         <table class="w-full text-left border-collapse">
-          <thead>
+          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-black/90">
             <tr class="bg-gray-50 dark:bg-black/50 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
-              <th class="p-4 font-semibold w-12">
-                <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600">
-              </th>
               <th class="p-4 font-semibold whitespace-nowrap">Category Name</th>
               <th class="p-4 font-semibold whitespace-nowrap">Description</th>
               <th class="p-4 font-semibold whitespace-nowrap">Status</th>
@@ -36,10 +33,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="(cat, i) in categories.data" :key="cat.id">
-              <td class="p-4">
-                <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600">
-              </td>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="(cat, i) in localCategories" :key="cat.id">
               <td class="p-4">
                 <div class="font-medium text-gray-900 dark:text-white">{{ cat.name }}</div>
               </td>
@@ -53,7 +47,7 @@
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-3">
                   <button @click="openEditModal(cat)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm font-medium mr-2">Edit</button>
-                  <button @click="deleteCategory(cat.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
+                  <button @click="confirmDeleteCategory(cat.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
                 </div>
               </td>
             </tr>
@@ -61,14 +55,7 @@
         </table>
       </div>
       
-      <!-- Pagination -->
-      <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-900/50">
-        <span>Showing {{ categories.from || 0 }} to {{ categories.to || 0 }} of {{ categories.total }} results</span>
-        <div class="flex gap-1">
-          <component :is="categories.prev_page_url ? 'Link' : 'button'" :href="categories.prev_page_url" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" :class="{ 'opacity-50 cursor-not-allowed': !categories.prev_page_url }" :disabled="!categories.prev_page_url">Previous</component>
-          <component :is="categories.next_page_url ? 'Link' : 'button'" :href="categories.next_page_url" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" :class="{ 'opacity-50 cursor-not-allowed': !categories.next_page_url }" :disabled="!categories.next_page_url">Next</component>
-        </div>
-      </div>
+            <div ref="loadMoreTarget" class="h-4"></div>
     </div>
 
     <!-- Add Category Modal -->
@@ -114,28 +101,61 @@
         <button form="editCategoryForm" type="submit" :disabled="editForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Category</button>
       </template>
     </Modal>
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal 
+      :show="showDeleteModal" 
+      message="Are you sure you want to delete this category? All products associated with this category may be affected."
+      @close="showDeleteModal = false; itemToDelete = null"
+      @confirm="executeDeleteCategory"
+    />
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { router, useForm, Link } from '@inertiajs/vue3';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
+import debounce from 'lodash/debounce';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
-import debounce from 'lodash/debounce';
+import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 
 const props = defineProps({
-    categories: {
-        type: Object,
-        default: () => ({ data: [], total: 0, from: 0, to: 0, prev_page_url: null, next_page_url: null })
-    },
-    filters: {
-        type: Object,
-        default: () => ({})
-    }
+    categories: Object,
+    filters: Object
 });
 
 const search = ref(props.filters.search || '');
+
+// Infinite Scroll Logic
+const localCategories = ref([]);
+watch(() => props.categories.data, (newData) => {
+    if (props.categories.current_page === 1) {
+        localCategories.value = newData;
+    } else {
+        localCategories.value = [...localCategories.value, ...newData];
+    }
+}, { immediate: true });
+
+const loadMoreTarget = ref(null);
+let observer = null;
+
+onMounted(() => {
+    observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && props.categories.next_page_url) {
+            router.get(props.categories.next_page_url, {}, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    }, { rootMargin: '100px' });
+    
+    if (loadMoreTarget.value) observer.observe(loadMoreTarget.value);
+});
+
+onUnmounted(() => {
+    if (observer) observer.disconnect();
+});
+
 
 watch(search, debounce((value) => {
     router.get('/categories', { search: value }, {
@@ -185,9 +205,23 @@ const updateCategory = () => {
     });
 };
 
-const deleteCategory = (id) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-        router.delete(`/categories/${id}`, { preserveScroll: true });
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+
+const confirmDeleteCategory = (id) => {
+    itemToDelete.value = id;
+    showDeleteModal.value = true;
+};
+
+const executeDeleteCategory = () => {
+    if (itemToDelete.value) {
+        router.delete(`/categories/${itemToDelete.value}`, { 
+            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteModal.value = false;
+                itemToDelete.value = null;
+            }
+        });
     }
 };
 </script>

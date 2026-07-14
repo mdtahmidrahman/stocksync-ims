@@ -50,9 +50,9 @@
       </div>
 
       <!-- Table -->
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
         <table class="w-full text-left border-collapse">
-          <thead>
+          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-black/90">
             <tr class="bg-gray-50 dark:bg-black/50 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
               <th class="p-4 font-semibold whitespace-nowrap">Product Name</th>
               <th class="p-4 font-semibold whitespace-nowrap">SKU</th>
@@ -63,7 +63,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="product in products.data" :key="product.id">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="product in localProducts" :key="product.id">
               <td class="p-4">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0 overflow-hidden">
@@ -88,7 +88,7 @@
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-2">
                   <button @click="openEditModal(product)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm font-medium mr-2">Edit</button>
-                  <button @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
+                  <button @click="confirmDeleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
                 </div>
               </td>
             </tr>
@@ -96,14 +96,7 @@
         </table>
       </div>
       
-      <!-- Pagination -->
-      <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-900/50">
-        <span>Showing {{ products.from || 0 }} to {{ products.to || 0 }} of {{ products.total }} results</span>
-        <div class="flex gap-1">
-          <component :is="products.prev_page_url ? 'Link' : 'button'" :href="products.prev_page_url" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" :class="{ 'opacity-50 cursor-not-allowed': !products.prev_page_url }" :disabled="!products.prev_page_url">Prev</component>
-          <component :is="products.next_page_url ? 'Link' : 'button'" :href="products.next_page_url" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" :class="{ 'opacity-50 cursor-not-allowed': !products.next_page_url }" :disabled="!products.next_page_url">Next</component>
-        </div>
-      </div>
+            <div ref="loadMoreTarget" class="h-4"></div>
     </div>
 
     <!-- Add Product Modal -->
@@ -384,25 +377,27 @@
         </div>
       </template>
     </Modal>
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal 
+      :show="showDeleteModal" 
+      message="Are you sure you want to delete this product? This action cannot be undone."
+      @close="showDeleteModal = false; itemToDelete = null"
+      @confirm="executeDeleteProduct"
+    />
   </AppLayout>
 </template>
 
 <script setup>
-import Dropdown from '../Components/Dropdown.vue';
-import { ref, watch } from 'vue';
-import { router, useForm, Link, usePage } from '@inertiajs/vue3';
-import { useCurrency } from '../Composables/useCurrency';
-
-const { currencySymbol } = useCurrency();
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { router, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
+import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
+import Dropdown from '../Components/Dropdown.vue';
 import debounce from 'lodash/debounce';
 
 const props = defineProps({
-    products: {
-        type: Object,
-        default: () => ({ data: [], total: 0, from: 0, to: 0, prev_page_url: null, next_page_url: null })
-    },
+    products: Object,
     categories: {
         type: Array,
         default: () => []
@@ -414,6 +409,37 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+
+// Infinite Scroll Logic
+const localProducts = ref([]);
+watch(() => props.products.data, (newData) => {
+    if (props.products.current_page === 1) {
+        localProducts.value = newData;
+    } else {
+        localProducts.value = [...localProducts.value, ...newData];
+    }
+}, { immediate: true });
+
+const loadMoreTarget = ref(null);
+let observer = null;
+
+onMounted(() => {
+    observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && props.products.next_page_url) {
+            router.get(props.products.next_page_url, {}, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    }, { rootMargin: '100px' });
+    
+    if (loadMoreTarget.value) observer.observe(loadMoreTarget.value);
+});
+
+onUnmounted(() => {
+    if (observer) observer.disconnect();
+});
+
 const categoryId = ref(props.filters.category_id ? String(props.filters.category_id) : '');
 
 watch([search, categoryId], debounce(([searchVal, catIdVal]) => {
@@ -514,9 +540,23 @@ const updateProduct = () => {
     });
 };
 
-const deleteProduct = (id) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-        router.delete(`/products/${id}`);
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+
+const confirmDeleteProduct = (id) => {
+    itemToDelete.value = id;
+    showDeleteModal.value = true;
+};
+
+const executeDeleteProduct = () => {
+    if (itemToDelete.value) {
+        router.delete(`/products/${itemToDelete.value}`, { 
+            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteModal.value = false;
+                itemToDelete.value = null;
+            }
+        });
     }
 };
 </script>

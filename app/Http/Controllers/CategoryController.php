@@ -20,7 +20,7 @@ class CategoryController extends Controller
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
 
-        $categories = $query->latest()->paginate(10)->withQueryString();
+        $categories = $query->latest()->paginate(50)->withQueryString();
 
         return Inertia::render('Categories', [
             'categories' => $categories,
