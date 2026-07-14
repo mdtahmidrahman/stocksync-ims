@@ -47,7 +47,7 @@ class HandleInertiaRequests extends Middleware
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
                     'company_id' => $request->user()->company_id,
                 ] : null,
-                'company' => $request->user() ? Company::find($request->user()->company_id)->only(['name', 'currency']) : null,
+                'company' => $request->user() ? Company::find($request->user()->company_id)?->only(['name', 'currency']) : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
