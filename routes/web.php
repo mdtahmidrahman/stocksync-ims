@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PlatformController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,9 +34,7 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('Dashboard');
     })->middleware('role:admin|manager|staff')->name('dashboard');
 
-    Route::get('/platform', function () {
-        return Inertia::render('SuperAdminDashboard');
-    })->middleware('role:super_admin');
+    Route::get('/platform', [PlatformController::class, 'dashboardMetrics'])->middleware('role:super_admin');
 
     // Products (Web / Inertia)
     Route::get('/products/export', [ProductController::class, 'export'])->middleware('role:admin|manager');
@@ -86,9 +85,8 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('Payments');
     })->middleware('role:admin|manager');
 
-    Route::get('/settings', function () {
-        return Inertia::render('Settings');
-    })->middleware('role:admin');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('role:admin|manager');
+    Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin|manager');
 
     Route::get('/support', function () {
         return Inertia::render('Support');
@@ -111,10 +109,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/team', [TeamController::class, 'store'])->middleware('role:admin');
     Route::put('/team/{id}', [TeamController::class, 'update'])->middleware('role:admin');
     Route::delete('/team/{id}', [TeamController::class, 'destroy'])->middleware('role:admin');
-    
-
-    // Super Admin API
-    Route::get('/api/platform/metrics', [PlatformController::class, 'dashboardMetrics']);
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

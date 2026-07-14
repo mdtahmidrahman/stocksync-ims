@@ -29,7 +29,7 @@ class PlatformController extends Controller
         
         $recentCompanies = Company::latest()->take(5)->get();
 
-        return response()->json([
+        return inertia('SuperAdminDashboard', [
             'metrics' => [
                 'total_companies' => $totalCompanies,
                 'total_users' => $totalUsers,

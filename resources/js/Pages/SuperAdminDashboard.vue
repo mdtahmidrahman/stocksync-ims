@@ -61,7 +61,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="company in recentCompanies" :key="company.id">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="company in recent_companies" :key="company.id">
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400">#{{ company.id }}</td>
               <td class="p-4 font-medium text-gray-900 dark:text-white">{{ company.name }}</td>
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ new Date(company.created_at).toLocaleDateString() }}</td>
@@ -71,7 +71,7 @@
                 </span>
               </td>
             </tr>
-            <tr v-if="recentCompanies.length === 0">
+            <tr v-if="recent_companies.length === 0">
                 <td colspan="4" class="p-8 text-center text-gray-500 dark:text-gray-400">No companies found.</td>
             </tr>
           </tbody>
@@ -84,23 +84,9 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
 
-const metrics = ref({ total_companies: 0, total_users: 0, total_products: 0 });
-const recentCompanies = ref([]);
-
-const fetchMetrics = async () => {
-    try {
-        const response = await axios.get('/api/platform/metrics');
-        metrics.value = response.data.metrics;
-        recentCompanies.value = response.data.recent_companies;
-    } catch (error) {
-        console.error('Failed to load platform metrics:', error);
-    }
-};
-
-onMounted(() => {
-    fetchMetrics();
+defineProps({
+    metrics: Object,
+    recent_companies: Array
 });
 </script>

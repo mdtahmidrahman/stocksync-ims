@@ -131,7 +131,7 @@
               <p class="text-sm text-gray-900 dark:text-white">{{ currentUser?.name || 'Loading...' }}</p>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ currentUser?.email || '' }}</p>
             </div>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="close">Profile Settings</a>
+            <Link href="/profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="close">Profile Settings</Link>
             <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="close">Billing</a>
             <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-t border-gray-100 dark:border-gray-700" @click.prevent="handleLogout(); close()">Sign out</a>
           </template>
@@ -152,7 +152,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, Link } from '@inertiajs/vue3';
 import BrandLogo from './BrandLogo.vue';
 import { useAppState } from '../Composables/useAppState';
 
