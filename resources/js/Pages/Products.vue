@@ -34,7 +34,18 @@
                 <a href="#" v-for="cat in categories" :key="cat.id" @click.prevent="categoryId = String(cat.id); close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="categoryId === String(cat.id) ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
               </template>
             </Dropdown>
-            <a :href="`/products/export?search=${search}&category_id=${categoryId}`" class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center flex-1 sm:flex-none">Export</a>
+            <Dropdown align="right" width="48" class="flex-1 sm:flex-none">
+              <template #trigger>
+                <button type="button" class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center w-full sm:w-auto transition-colors">
+                  <span>Export</span>
+                  <svg class="w-4 h-4 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content>
+                <a :href="`/products/export?search=${search}&category_id=${categoryId}&format=csv`" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Export as CSV</a>
+                <a :href="`/products/export?search=${search}&category_id=${categoryId}&format=xlsx`" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Export as Excel</a>
+              </template>
+            </Dropdown>
         </div>
       </div>
 
@@ -257,16 +268,19 @@
       <template #body>
         <form @submit.prevent="importProducts" id="importProductsForm" class="space-y-4">
           <div class="flex justify-between items-center text-sm">
-            <span class="text-gray-500 dark:text-gray-400">Upload CSV file</span>
+            <span class="text-gray-500 dark:text-gray-400">Upload Spreadsheet or ZIP File</span>
             <a href="/products/export" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">Download Template</a>
           </div>
+          <div class="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded-lg border border-blue-100 dark:border-blue-800/30">
+            <strong>Pro Tip:</strong> Upload a <code>.csv</code> or <code>.xlsx</code> for text data. To bulk import images offline, upload a <code>.zip</code> file containing your spreadsheet and an images folder!
+          </div>
           <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative">
-            <input type="file" accept=".csv" @change="e => importForm.file = e.target.files[0]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required />
+            <input type="file" accept=".csv, .xlsx, .zip" @change="e => importForm.file = e.target.files[0]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required />
             <div class="w-16 h-16 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center mb-4">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             </div>
             <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ importForm.file ? importForm.file.name : 'Click to upload or drag and drop' }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">CSV (MAX. 10MB)</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">CSV, XLSX, ZIP (MAX. 50MB)</p>
           </div>
           <div v-if="importForm.errors.file" class="text-red-500 text-xs mt-1">{{ importForm.errors.file }}</div>
         </form>

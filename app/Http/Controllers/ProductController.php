@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Rap2hpoutre\FastExcel\FastExcel;
+use ZipArchive;
 
 class ProductController extends Controller
 {
@@ -154,63 +159,180 @@ class ProductController extends Controller
 
         $products = $query->latest()->get();
 
-        $headers = [
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=products.csv",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
-        ];
+        $format = $request->query('format', 'xlsx');
+        $filename = 'products.' . ($format === 'csv' ? 'csv' : 'xlsx');
 
-        $columns = ['ID', 'Name', 'SKU', 'Category', 'Price', 'Stock Level', 'Created At'];
-
-        $callback = function() use($products, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-
-            foreach ($products as $product) {
-                $row['ID'] = $product->id;
-                $row['Name'] = $product->name;
-                $row['SKU'] = $product->sku;
-                $row['Category'] = $product->category ? $product->category->name : 'Uncategorized';
-                $row['Price'] = $product->price;
-                $row['Stock Level'] = $product->stock_quantity;
-                $row['Created At'] = $product->created_at;
-
-                fputcsv($file, array($row['ID'], $row['Name'], $row['SKU'], $row['Category'], $row['Price'], $row['Stock Level'], $row['Created At']));
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return (new FastExcel($products))->download($filename, function ($product) {
+            return [
+                'ID' => $product->id,
+                'Name' => $product->name,
+                'SKU' => $product->sku,
+                'Category' => $product->category ? $product->category->name : 'Uncategorized',
+                'Price' => $product->price,
+                'Stock Level' => $product->stock_quantity,
+                'Image URL' => $product->image_path ? url('storage/' . $product->image_path) : '',
+                'Created At' => $product->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
     }
 
     public function import(Request $request)
     {
+        // Allowing the script to run as long as necessary for heavy bulk uploads and image downloading
+        set_time_limit(0);
+
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls,zip'
         ]);
 
         $file = $request->file('file');
-        $fileHandle = fopen($file->getPathname(), 'r');
-        $header = fgetcsv($fileHandle);
+        $extension = $file->getClientOriginalExtension();
 
-        while (($row = fgetcsv($fileHandle)) !== false) {
-            // Assume CSV format: Name, SKU, Category ID, Price, Stock Level
-            if (count($row) >= 5) {
-                Product::updateOrCreate(
-                    ['sku' => $row[1]], // Update by SKU
-                    [
-                        'name' => $row[0],
-                        'category_id' => $row[2] ?: null,
-                        'price' => is_numeric($row[3]) ? $row[3] : 0,
-                        'stock_quantity' => is_numeric($row[4]) ? $row[4] : 0,
-                    ]
-                );
+        $spreadsheetPath = null;
+        $extractPath = null;
+
+        // Handle ZIP Uploads
+        if ($extension === 'zip') {
+            $zip = new ZipArchive;
+            if ($zip->open($file->getPathname()) === TRUE) {
+                $extractPath = storage_path('app/temp/import_' . Str::random(10));
+                if (!File::exists($extractPath)) {
+                    File::makeDirectory($extractPath, 0755, true);
+                }
+                $zip->extractTo($extractPath);
+                $zip->close();
+
+                // Finds the spreadsheet inside the extracted ZIP
+                $files = File::allFiles($extractPath);
+                foreach ($files as $f) {
+                    if (in_array($f->getExtension(), ['csv', 'xlsx', 'xls'])) {
+                        $spreadsheetPath = $f->getPathname();
+                        break;
+                    }
+                }
+
+                if (!$spreadsheetPath) {
+                    File::deleteDirectory($extractPath);
+                    return redirect()->back()->with('error', 'No valid spreadsheet (.csv, .xlsx) found inside the ZIP file.');
+                }
+            } else {
+                return redirect()->back()->with('error', 'Failed to open ZIP file.');
+            }
+        } else {
+            $spreadsheetPath = $file->getPathname();
+        }
+
+        try {
+            $collection = (new FastExcel)->import($spreadsheetPath);
+        } catch (\Exception $e) {
+            if ($extractPath) File::deleteDirectory($extractPath);
+            return redirect()->back()->with('error', 'Failed to parse spreadsheet.');
+        }
+
+        foreach ($collection as $row) {
+            // Case-insensitive key lookup helper
+            $getValue = function($keys) use ($row) {
+                foreach ((array)$keys as $k) {
+                    foreach ($row as $rowKey => $rowValue) {
+                        if (strtolower(trim($rowKey)) === strtolower(trim($k))) {
+                            return trim($rowValue);
+                        }
+                    }
+                }
+                return null;
+            };
+
+            $sku = $getValue('sku');
+            $name = $getValue('name');
+
+            if (!$sku || !$name) continue;
+
+            $categoryName = $getValue('category');
+            $categoryId = null;
+            if ($categoryName && strtolower($categoryName) !== 'uncategorized') {
+                $category = Category::firstOrCreate([
+                    'name' => $categoryName,
+                    'company_id' => auth()->user()->company_id
+                ]);
+                $categoryId = $category->id;
+            }
+
+            $price = $getValue('price');
+            $stock = $getValue(['stock level', 'stock_quantity', 'stock']);
+            $imageRef = $getValue(['image url', 'image', 'image_url', 'image_path']);
+
+            $product = Product::updateOrCreate(
+                [
+                    'sku' => $sku,
+                    'company_id' => auth()->user()->company_id
+                ],
+                [
+                    'name' => $name,
+                    'category_id' => $categoryId,
+                    'price' => is_numeric($price) ? $price : 0,
+                    'stock_quantity' => is_numeric($stock) ? $stock : 0,
+                ]
+            );
+
+            // Handle Image Processing
+            if ($imageRef) {
+                $imagePath = null;
+
+                // Remote URL
+                if (filter_var($imageRef, FILTER_VALIDATE_URL)) {
+                    // Checking if it's our own app's URL to prevent deadlock on 'php artisan serve'
+                    $appUrl = url('/');
+                    if (str_starts_with($imageRef, $appUrl)) {
+                        // Extracting the relative path (e.g., 'products/image.jpg')
+                        $relativePath = str_replace($appUrl . '/storage/', '', $imageRef);
+                        if (Storage::disk('public')->exists($relativePath)) {
+                            // Reusing it when image already exists on our server
+                            $imagePath = $relativePath;
+                        }
+                    } else {
+                        // Downloading when it's true external URL
+                        try {
+                            $contents = Http::timeout(10)->withoutVerifying()->get($imageRef)->body();
+                            $filename = basename(parse_url($imageRef, PHP_URL_PATH));
+                            if (!$filename) $filename = Str::random(10) . '.jpg';
+                            $path = 'products/' . Str::uuid() . '_' . $filename;
+                            Storage::disk('public')->put($path, $contents);
+                            $imagePath = $path;
+                        } catch (\Exception $e) {
+                            // Skip if failed to download
+                            \Log::error("Failed to download image from $imageRef: " . $e->getMessage());
+                        }
+                    }
+                } 
+                // Local file inside the ZIP
+                elseif ($extractPath) {
+                    // Try to find the file recursively in the ZIP extraction folder
+                    $allFiles = File::allFiles($extractPath);
+                    foreach ($allFiles as $f) {
+                        if (strtolower($f->getFilename()) === strtolower(basename($imageRef))) {
+                            $filename = $f->getFilename();
+                            $path = 'products/' . Str::uuid() . '_' . $filename;
+                            Storage::disk('public')->put($path, file_get_contents($f->getPathname()));
+                            $imagePath = $path;
+                            break;
+                        }
+                    }
+                }
+
+                if ($imagePath) {
+                    // Delete old image if it exists and is different from the new path
+                    if ($product->image_path && $product->image_path !== $imagePath) {
+                        Storage::disk('public')->delete($product->image_path);
+                    }
+                    $product->update(['image_path' => $imagePath]);
+                }
             }
         }
 
-        fclose($fileHandle);
+        // Cleanup temporary zip extraction directory
+        if ($extractPath) {
+            File::deleteDirectory($extractPath);
+        }
 
         return redirect()->back()->with('success', 'Products imported successfully.');
     }
