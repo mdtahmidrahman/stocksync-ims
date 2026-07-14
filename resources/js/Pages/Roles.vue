@@ -179,6 +179,15 @@
         </div>
       </template>
     </Modal>
+    
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal 
+      :show="showDeleteModal" 
+      message="Are you sure you want to completely revoke this user's access to the system? This cannot be undone."
+      confirmText="Revoke Access"
+      @close="showDeleteModal = false; itemToDelete = null"
+      @confirm="executeDeleteRole"
+    />
   </div>
   </AppLayout>
 </template>
@@ -189,6 +198,8 @@ import { ref, watch, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import Modal from '../Components/Modal.vue';
+import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
+import Dropdown from '../Components/Dropdown.vue';
 
 const props = defineProps({
     team: {
@@ -308,14 +319,27 @@ const handleEdit = async () => {
     });
 };
 
-const handleDelete = async (userId) => {
-    if (!confirm('Are you sure you want to completely revoke this user\'s access to the system?')) {
-        return;
-    }
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
 
-    router.delete(`/team/${userId}`, {
-        onSuccess: () => showEditModal.value = false,
-        onError: (errors) => editError.value = errors.message || 'Failed to revoke access.'
+const handleDelete = async (userId) => {
+    itemToDelete.value = userId;
+    showDeleteModal.value = true;
+};
+
+const executeDeleteRole = () => {
+    if (!itemToDelete.value) return;
+
+    router.delete(`/team/${itemToDelete.value}`, {
+        onSuccess: () => {
+            showEditModal.value = false;
+            showDeleteModal.value = false;
+            itemToDelete.value = null;
+        },
+        onError: (errors) => {
+            editError.value = errors.message || 'Failed to revoke access.';
+            showDeleteModal.value = false;
+        }
     });
 };
 

@@ -29,7 +29,7 @@
           ]">
             
             <!-- Header -->
-            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 rounded-t-2xl flex items-center justify-between shrink-0">
               <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modal-title">
                 <slot name="title">{{ title || 'Modal Title' }}</slot>
               </h3>
@@ -47,7 +47,7 @@
             </div>
 
             <!-- Footer -->
-            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 shrink-0 flex items-center justify-end gap-3">
+            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 rounded-b-2xl shrink-0 flex items-center justify-end gap-3">
               <slot name="footer">
                 <button @click="$emit('close')" type="button" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition-colors">
                   Cancel

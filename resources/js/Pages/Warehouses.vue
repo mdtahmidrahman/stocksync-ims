@@ -54,7 +54,7 @@
             </div>
             <div class="flex items-center gap-2">
               <button @click="openEditModal(wh)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm font-medium mr-2">Edit</button>
-              <button @click="deleteWarehouse(wh.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
+              <button @click="confirmDeleteWarehouse(wh.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Delete</button>
             </div>
           </div>
           
@@ -326,6 +326,13 @@
         </div>
       </template>
     </Modal>
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal 
+      :show="showDeleteModal" 
+      message="Are you sure you want to delete this warehouse? All inventory associated with this location may be affected."
+      @close="showDeleteModal = false; itemToDelete = null"
+      @confirm="executeDeleteWarehouse"
+    />
   </AppLayout>
 </template>
 <script setup>
@@ -334,6 +341,7 @@ import { ref, watch } from 'vue';
 import { router, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
+import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 import debounce from 'lodash/debounce';
 
 const props = defineProps({
@@ -403,9 +411,23 @@ const updateWarehouse = () => {
     });
 };
 
-const deleteWarehouse = (id) => {
-    if (confirm('Are you sure you want to delete this warehouse?')) {
-        router.delete(`/warehouses/${id}`, { preserveScroll: true });
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+
+const confirmDeleteWarehouse = (id) => {
+    itemToDelete.value = id;
+    showDeleteModal.value = true;
+};
+
+const executeDeleteWarehouse = () => {
+    if (itemToDelete.value) {
+        router.delete(`/warehouses/${itemToDelete.value}`, { 
+            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteModal.value = false;
+                itemToDelete.value = null;
+            }
+        });
     }
 };
 </script>
