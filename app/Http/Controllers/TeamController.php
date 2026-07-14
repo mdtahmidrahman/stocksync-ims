@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Http\Requests\StoreTeamMemberRequest;
+use App\Http\Requests\UpdateTeamMemberRequest;
 
 class TeamController extends Controller
 {
@@ -27,53 +27,40 @@ class TeamController extends Controller
     /**
      * Store a newly created team member in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTeamMemberRequest $request)
     {
         // Only admins can invite/create team members
         if (!Auth::user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized. Only admins can manage the team.'], 403);
+            return redirect()->back()->with('error', 'Unauthorized. Only admins can manage the team.');
         }
-
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'role' => ['required', 'string', Rule::in(['manager', 'staff'])],
-        ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make('password'), // Default password for newly created accounts
-            'role' => $request->role,
+            'password' => bcrypt(Str::random(16)),
             'company_id' => Auth::user()->company_id,
+            'role' => $request->role,
         ]);
 
         $user->assignRole($request->role);
 
-        return response()->json([
-            'message' => 'Team member added successfully. Default password is "password".',
-            'user' => $user
-        ], 201);
+        return redirect()->back()->with('success', 'Team member added successfully.');
     }
 
     /**
      * Update the specified team member's role.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateTeamMemberRequest $request, $id)
     {
         if (!Auth::user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized. Only admins can manage the team.'], 403);
+            return redirect()->back()->with('error', 'Unauthorized. Only admins can manage the team.');
         }
 
         $user = User::where('company_id', Auth::user()->company_id)->findOrFail($id);
 
         if ($user->id === Auth::id()) {
-            return response()->json(['message' => 'You cannot edit your own role.'], 400);
+            return redirect()->back()->with('error', 'You cannot edit your own role.');
         }
-
-        $request->validate([
-            'role' => ['required', 'string', Rule::in(['manager', 'staff'])],
-        ]);
 
         $user->update([
             'role' => $request->role,
@@ -81,7 +68,7 @@ class TeamController extends Controller
 
         $user->syncRoles([$request->role]);
 
-        return response()->json(['message' => 'Team member updated successfully.']);
+        return redirect()->back()->with('success', 'Team member updated successfully.');
     }
 
     /**
@@ -90,17 +77,17 @@ class TeamController extends Controller
     public function destroy($id)
     {
         if (!Auth::user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized. Only admins can manage the team.'], 403);
+            return redirect()->back()->with('error', 'Unauthorized. Only admins can manage the team.');
         }
 
         $user = User::where('company_id', Auth::user()->company_id)->findOrFail($id);
         
         if ($user->id === Auth::id()) {
-            return response()->json(['message' => 'You cannot remove yourself from the team.'], 400);
+            return redirect()->back()->with('error', 'You cannot delete yourself.');
         }
 
         $user->delete();
 
-        return response()->json(['message' => 'Team member removed successfully.']);
+        return redirect()->back()->with('success', 'Team member removed successfully.');
     }
 }

@@ -108,15 +108,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Team & Roles Management
     Route::get('/roles', [TeamController::class, 'index'])->name('roles.index')->middleware('role:admin');
-    Route::post('/api/team', [TeamController::class, 'store'])->middleware('role:admin');
-    Route::put('/api/team/{id}', [TeamController::class, 'update'])->middleware('role:admin');
-    Route::delete('/api/team/{id}', [TeamController::class, 'destroy'])->middleware('role:admin');
+    Route::post('/team', [TeamController::class, 'store'])->middleware('role:admin');
+    Route::put('/team/{id}', [TeamController::class, 'update'])->middleware('role:admin');
+    Route::delete('/team/{id}', [TeamController::class, 'destroy'])->middleware('role:admin');
     
-    // Core Inventory API Endpoints (Fallback / REST compatibility)
-    Route::apiResource('/api/categories', CategoryController::class);
-    Route::apiResource('/api/warehouses', WarehouseController::class);
-    Route::apiResource('/api/products', ProductController::class);
-    
+
     // Super Admin API
     Route::get('/api/platform/metrics', [PlatformController::class, 'dashboardMetrics']);
     

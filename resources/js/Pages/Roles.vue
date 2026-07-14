@@ -248,24 +248,27 @@ const handleInvite = async () => {
     const backendRole = newRole.value === 'Manager' ? 'manager' : 'staff';
 
     isInviting.value = true;
-    try {
-        await axios.post('/api/team', {
-            name: newName.value,
-            email: newEmail.value,
-            role: backendRole
-        });
-        showAddModal.value = false;
-        fetchTeam(); // Refresh the list
-        
-        // Reset form
-        newName.value = '';
-        newEmail.value = '';
-        newRole.value = '';
-    } catch (err) {
-        error.value = err.response?.data?.message || 'Failed to invite user.';
-    } finally {
-        isInviting.value = false;
-    }
+    isInviting.value = true;
+    router.post('/team', {
+        name: newName.value,
+        email: newEmail.value,
+        role: backendRole
+    }, {
+        onSuccess: () => {
+            showAddModal.value = false;
+            // Reset form
+            newName.value = '';
+            newEmail.value = '';
+            newRole.value = '';
+        },
+        onError: (errors) => {
+            error.value = errors.message || 'Failed to invite user.';
+        },
+        onFinish: () => {
+            isInviting.value = false;
+        }
+    });
+
 };
 
 const openEditModal = (user) => {
@@ -290,17 +293,19 @@ const handleEdit = async () => {
     isEditing.value = true;
     editError.value = '';
 
-    try {
-        await axios.put(`/api/team/${editingUser.value.id}`, {
-            role: backendRole
-        });
-        showEditModal.value = false;
-        fetchTeam();
-    } catch (err) {
-        editError.value = err.response?.data?.message || 'Failed to update user.';
-    } finally {
-        isEditing.value = false;
-    }
+    router.put(`/team/${editingUser.value.id}`, {
+        role: backendRole
+    }, {
+        onSuccess: () => {
+            showEditModal.value = false;
+        },
+        onError: (errors) => {
+            editError.value = errors.message || 'Failed to update user.';
+        },
+        onFinish: () => {
+            isEditing.value = false;
+        }
+    });
 };
 
 const handleDelete = async (userId) => {
@@ -308,13 +313,10 @@ const handleDelete = async (userId) => {
         return;
     }
 
-    try {
-        await axios.delete(`/api/team/${userId}`);
-        showEditModal.value = false;
-        fetchTeam();
-    } catch (err) {
-        editError.value = err.response?.data?.message || 'Failed to revoke access.';
-    }
+    router.delete(`/team/${userId}`, {
+        onSuccess: () => showEditModal.value = false,
+        onError: (errors) => editError.value = errors.message || 'Failed to revoke access.'
+    });
 };
 
 const roleClass = (role) => {

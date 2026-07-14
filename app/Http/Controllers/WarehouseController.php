@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Http\Requests\StoreWarehouseRequest;
+use App\Http\Requests\UpdateWarehouseRequest;
+use App\Http\Requests\BulkImportRequest;
 
 class WarehouseController extends Controller
 {
@@ -19,29 +22,15 @@ class WarehouseController extends Controller
 
         $warehouses = $query->latest()->paginate(10)->withQueryString();
 
-        if ($request->wantsJson()) {
-            return response()->json($warehouses);
-        }
-
         return Inertia::render('Warehouses', [
             'warehouses' => $warehouses,
             'filters' => $request->only(['search'])
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreWarehouseRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'is_active' => 'boolean',
-        ]);
-
-        $warehouse = Warehouse::create($request->all());
-
-        if ($request->wantsJson()) {
-            return response()->json($warehouse, 201);
-        }
+        Warehouse::create($request->validated());
 
         return redirect()->back()->with('success', 'Warehouse created successfully.');
     }
@@ -51,19 +40,9 @@ class WarehouseController extends Controller
         return response()->json($warehouse);
     }
 
-    public function update(Request $request, Warehouse $warehouse)
+    public function update(UpdateWarehouseRequest $request, Warehouse $warehouse)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'is_active' => 'boolean',
-        ]);
-
-        $warehouse->update($request->all());
-
-        if ($request->wantsJson()) {
-            return response()->json($warehouse);
-        }
+        $warehouse->update($request->validated());
 
         return redirect()->back()->with('success', 'Warehouse updated successfully.');
     }
@@ -119,12 +98,8 @@ class WarehouseController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function import(Request $request)
+    public function import(BulkImportRequest $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt'
-        ]);
-
         $file = $request->file('file');
         $fileHandle = fopen($file->getPathname(), 'r');
         $header = fgetcsv($fileHandle);

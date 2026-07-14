@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +12,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Rap2hpoutre\FastExcel\FastExcel;
 use ZipArchive;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use App\Http\Requests\BulkImportRequest;
 
 class ProductController extends Controller
 {
@@ -33,10 +35,6 @@ class ProductController extends Controller
 
         $products = $query->latest()->paginate(10)->withQueryString();
 
-        if ($request->wantsJson()) {
-            return response()->json($products);
-        }
-
         return Inertia::render('Products', [
             'products' => $products,
             'categories' => Category::all(),
@@ -44,29 +42,11 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         if ($request->has('stock_level')) {
             $request->merge(['stock_quantity' => $request->stock_level]);
         }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => [
-                'required', 
-                'string', 
-                'max:255', 
-                Rule::unique('products')->where(function ($query) {
-                    return $query->where('company_id', auth()->user()->company_id);
-                })
-            ],
-            'category_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'price' => 'numeric|min:0',
-            'cost' => 'numeric|min:0',
-            'stock_quantity' => 'integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -80,10 +60,7 @@ class ProductController extends Controller
         $product = Product::create($productData);
         $product->load('category');
 
-        if ($request->wantsJson()) {
-            return response()->json($product, 201);
-        }
-
+        $product->load('category');
         return redirect()->back()->with('success', 'Product created successfully.');
     }
 
@@ -92,37 +69,14 @@ class ProductController extends Controller
         return response()->json($product->load('category'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
         if ($request->has('stock_level')) {
             $request->merge(['stock_quantity' => $request->stock_level]);
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' =>
-            [
-                'required', 
-                'string', 
-                'max:255', 
-                Rule::unique('products')->ignore($product->id)->where(function ($query) {
-                    return $query->where('company_id', auth()->user()->company_id);
-                })
-            ],
-            'category_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'price' => 'numeric|min:0',
-            'cost' => 'numeric|min:0',
-            'stock_quantity' => 'integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
-
         $product->update($request->all());
         $product->load('category');
-
-        if ($request->wantsJson()) {
-            return response()->json($product);
-        }
 
         return redirect()->back()->with('success', 'Product updated successfully.');
     }
@@ -176,14 +130,10 @@ class ProductController extends Controller
         });
     }
 
-    public function import(Request $request)
+    public function import(BulkImportRequest $request)
     {
         // Allowing the script to run as long as necessary for heavy bulk uploads and image downloading
         set_time_limit(0);
-
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls,zip'
-        ]);
 
         $file = $request->file('file');
         $extension = $file->getClientOriginalExtension();

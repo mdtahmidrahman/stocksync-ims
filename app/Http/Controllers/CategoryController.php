@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Requests\BulkImportRequest;
 
 class CategoryController extends Controller
 {
@@ -19,28 +22,15 @@ class CategoryController extends Controller
 
         $categories = $query->latest()->paginate(10)->withQueryString();
 
-        if ($request->wantsJson()) {
-            return response()->json($categories);
-        }
-
         return Inertia::render('Categories', [
             'categories' => $categories,
             'filters' => $request->only(['search'])
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $category = Category::create($request->all());
-
-        if ($request->wantsJson()) {
-            return response()->json($category, 201);
-        }
+        Category::create($request->validated());
 
         return redirect()->back()->with('success', 'Category created successfully.');
     }
@@ -50,18 +40,9 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $category->update($request->all());
-
-        if ($request->wantsJson()) {
-            return response()->json($category);
-        }
+        $category->update($request->validated());
 
         return redirect()->back()->with('success', 'Category updated successfully.');
     }
@@ -116,12 +97,8 @@ class CategoryController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function import(Request $request)
+    public function import(BulkImportRequest $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt'
-        ]);
-
         $file = $request->file('file');
         $fileHandle = fopen($file->getPathname(), 'r');
         $header = fgetcsv($fileHandle);
