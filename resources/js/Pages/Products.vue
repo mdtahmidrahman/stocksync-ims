@@ -395,6 +395,9 @@ import Modal from '../Components/Modal.vue';
 import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 import Dropdown from '../Components/Dropdown.vue';
 import debounce from 'lodash/debounce';
+import { useCurrency } from '../Composables/useCurrency';
+
+const { currencySymbol } = useCurrency();
 
 const props = defineProps({
     products: Object,
