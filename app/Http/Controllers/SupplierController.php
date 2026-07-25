@@ -34,7 +34,6 @@ class SupplierController extends Controller
     public function store(StoreSupplierRequest $request)
     {
         $data = $request->validated();
-        $data['company_id'] = auth()->user()->company_id;
 
         Supplier::create($data);
 

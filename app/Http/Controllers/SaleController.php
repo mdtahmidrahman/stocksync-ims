@@ -42,7 +42,6 @@ class SaleController extends Controller
             }
 
             $sale = Sale::create([
-                'company_id' => Company::first()->id ?? 1,
                 'customer_id' => $data['customer_id'] ?? null,
                 'user_id' => auth()->id() ?? 1,
                 'warehouse_id' => Warehouse::first()->id ?? 1,

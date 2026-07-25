@@ -40,7 +40,6 @@ class PurchaseController extends Controller
             }
 
             $purchase = Purchase::create([
-                'company_id' => auth()->user()->company_id,
                 'supplier_id' => $data['supplier_id'],
                 'user_id' => auth()->id(),
                 'reference_number' => $data['reference_number'] ?? 'PUR-' . time(),

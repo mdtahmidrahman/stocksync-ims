@@ -34,7 +34,6 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         $data = $request->validated();
-        $data['company_id'] = auth()->user()->company_id;
 
         Customer::create($data);
 
@@ -48,7 +47,7 @@ class CustomerController extends Controller
         return redirect()->back()->with('success', 'Customer updated successfully.');
     }
 
-    public function destroy(Request $request, Customer $customer)
+    public function destroy(Customer $customer)
     {
         $customer->delete();
 

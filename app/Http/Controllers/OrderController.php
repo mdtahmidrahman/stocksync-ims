@@ -10,7 +10,6 @@ use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Warehouse;
 use App\Models\StockMovement;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -19,26 +18,20 @@ class OrderController extends Controller
 {
     public function index()
     {
-        // For multi-tenant, we should scope by company_id, but assuming single tenant for now or using first company
-        $company_id = \App\Models\Company::first()->id ?? 1;
-
         $orders = Order::with(['customer', 'items.product', 'payments'])
-            ->where('company_id', $company_id)
             ->latest()
             ->paginate(10);
             
         return Inertia::render('Orders', [
             'orders' => $orders,
-            'customers' => Customer::where('company_id', $company_id)->get(),
-            'products' => Product::where('company_id', $company_id)->get(),
-            'warehouses' => Warehouse::where('company_id', $company_id)->get(),
+            'customers' => Customer::all(),
+            'products' => Product::all(),
+            'warehouses' => Warehouse::all(),
         ]);
     }
 
     public function store(StoreOrderRequest $request)
     {
-        $company_id = \App\Models\Company::first()->id ?? 1;
-
         DB::beginTransaction();
 
         try {
@@ -48,7 +41,6 @@ class OrderController extends Controller
             }
 
             $order = Order::create([
-                'company_id' => $company_id,
                 'customer_id' => $request->customer_id,
                 'warehouse_id' => $request->warehouse_id,
                 'order_number' => 'ORD-' . strtoupper(Str::random(8)),

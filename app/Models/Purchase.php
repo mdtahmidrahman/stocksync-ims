@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
 {
+    use \App\Traits\BelongsToCompany;
+
     protected $fillable = [
         'company_id',
         'supplier_id',

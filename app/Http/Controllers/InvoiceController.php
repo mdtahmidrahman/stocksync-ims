@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Sale;
 use App\Models\Order;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Company;
 
@@ -13,7 +12,7 @@ class InvoiceController extends Controller
     public function saleInvoice(Sale $sale)
     {
         $sale->load(['customer', 'items.product']);
-        $company = Company::first();
+        $company = auth()->user() ? auth()->user()->company : Company::first();
         $currencyRaw = $company ? $company->currency : '$';
         $currency = preg_match('/\((.*?)\)/', $currencyRaw, $m) ? $m[1] : $currencyRaw;
         $currency = str_replace('৳', 'Tk.', $currency);
@@ -34,7 +33,7 @@ class InvoiceController extends Controller
     public function orderInvoice(Order $order)
     {
         $order->load(['customer', 'items.product']);
-        $company = Company::first();
+        $company = auth()->user() ? auth()->user()->company : Company::first();
         $currencyRaw = $company ? $company->currency : '$';
         $currency = preg_match('/\((.*?)\)/', $currencyRaw, $m) ? $m[1] : $currencyRaw;
         $currency = str_replace('৳', 'Tk.', $currency);

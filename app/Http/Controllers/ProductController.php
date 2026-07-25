@@ -55,7 +55,6 @@ class ProductController extends Controller
 
         $productData = $request->except(['image', 'stock_level']);
         $productData['image_path'] = $imagePath;
-        $productData['company_id'] = auth()->user()->company_id;
 
         $product = Product::create($productData);
         $product->load('category');
@@ -202,7 +201,6 @@ class ProductController extends Controller
             if ($categoryName && strtolower($categoryName) !== 'uncategorized') {
                 $category = Category::firstOrCreate([
                     'name' => $categoryName,
-                    'company_id' => auth()->user()->company_id
                 ]);
                 $categoryId = $category->id;
             }
@@ -214,7 +212,6 @@ class ProductController extends Controller
             $product = Product::updateOrCreate(
                 [
                     'sku' => $sku,
-                    'company_id' => auth()->user()->company_id
                 ],
                 [
                     'name' => $name,

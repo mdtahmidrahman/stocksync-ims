@@ -9,7 +9,6 @@ use App\Models\Sale;
 use App\Models\Purchase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\Company;
 
 class PaymentController extends Controller
 {
@@ -20,8 +19,6 @@ class PaymentController extends Controller
 
     public function store(StorePaymentRequest $request)
     {
-        $company_id = Company::first()->id ?? 1;
-
         DB::beginTransaction();
 
         try {
@@ -31,7 +28,6 @@ class PaymentController extends Controller
 
             // Create the payment
             $payment = Payment::create([
-                'company_id' => $company_id,
                 'payable_id' => $payable->id,
                 'payable_type' => $payableClass,
                 'amount' => $request->amount,
