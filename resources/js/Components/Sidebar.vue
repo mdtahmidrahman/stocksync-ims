@@ -24,7 +24,7 @@
       </div>
 
       <!-- Navigation -->
-      <div class="flex-1 overflow-y-auto px-4 py-4 space-y-1 custom-scrollbar">
+      <div ref="navContainer" @scroll="handleScroll" class="flex-1 overflow-y-auto px-4 py-4 space-y-1 custom-scrollbar">
         <template v-if="currentUserRole === 'super_admin'">
           <Link href="/platform" @click="closeMobileMenu" class="nav-link flex items-center" :class="[isSidebarCollapsed ? 'justify-center' : '', isUrl('/platform') ? 'nav-active' : '']">
             <svg class="w-5 h-5 shrink-0" :class="isSidebarCollapsed ? '' : 'mr-3 opacity-75'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -151,13 +151,28 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import BrandLogo from './BrandLogo.vue';
 import { useAppState } from '../Composables/useAppState';
 
 const page = usePage();
 const { currentUserRole, isMobileMenuOpen, closeMobileMenu, isSidebarCollapsed, toggleSidebar, currentUser, logout } = useAppState();
+
+const navContainer = ref(null);
+
+const handleScroll = (e) => {
+  if (e.target) {
+    sessionStorage.setItem('sidebar_scroll_pos', e.target.scrollTop);
+  }
+};
+
+onMounted(() => {
+  const savedPos = sessionStorage.getItem('sidebar_scroll_pos');
+  if (savedPos !== null && navContainer.value) {
+    navContainer.value.scrollTop = parseInt(savedPos, 10);
+  }
+});
 
 const isUrl = (url) => page.url.startsWith(url);
 
