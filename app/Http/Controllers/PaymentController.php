@@ -7,14 +7,31 @@ use App\Models\Payment;
 use App\Models\Order;
 use App\Models\Sale;
 use App\Models\Purchase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return inertia('Payments');
+        $query = Payment::with('payable');
+
+        if ($request->filled('type') && $request->type !== 'All Types') {
+            if ($request->type === 'Incoming (Sales)') {
+                $query->whereIn('payable_type', [Sale::class, Order::class]);
+            } elseif ($request->type === 'Outgoing (Purchases)') {
+                $query->where('payable_type', Purchase::class);
+            }
+        }
+
+        $payments = $query->latest()->paginate(50)->withQueryString();
+
+        return Inertia::render('Payments', [
+            'payments' => $payments,
+            'filters' => $request->only(['type']),
+        ]);
     }
 
     public function store(StorePaymentRequest $request)
@@ -36,10 +53,10 @@ class PaymentController extends Controller
                 'reference_number' => $request->reference_number ?? 'PAY-' . strtoupper(Str::random(6)),
             ]);
 
-            // Update the payable's payment status if applicable
-            if (in_array($payableClass, [Order::class, Sale::class, Purchase::class])) {
+            // Update the payable's payment status if it's an Order
+            if ($payableClass === Order::class) {
                 $totalPaid = $payable->payments()->sum('amount');
-                $totalDue = $payable->total_amount; // Assuming all three have total_amount
+                $totalDue = $payable->total_amount;
 
                 if ($totalPaid >= $totalDue) {
                     $payable->update(['payment_status' => 'paid']);
