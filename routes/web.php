@@ -14,6 +14,10 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\SupportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -82,17 +86,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices/sale/{sale}', [InvoiceController::class, 'saleInvoice'])->name('invoice.sale');
     Route::get('/invoices/order/{order}', [InvoiceController::class, 'orderInvoice'])->name('invoice.order');
 
-    Route::get('/inventory', function () {
-        return Inertia::render('Inventory');
-    })->middleware('role:admin|manager|staff');
+    Route::get('/inventory', [InventoryController::class, 'index'])->middleware('role:admin|manager|staff');
+    Route::post('/inventory/adjust', [InventoryController::class, 'adjust'])->middleware('role:admin|manager');
+    Route::get('/inventory/history/{product}', [InventoryController::class, 'history'])->middleware('role:admin|manager|staff');
 
     Route::get('/purchases', [PurchaseController::class, 'index'])->middleware('role:admin|manager');
     Route::post('/purchases', [PurchaseController::class, 'store'])->middleware('role:admin|manager');
     Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('role:admin|manager');
 
-    Route::get('/reports', function () {
-        return Inertia::render('Reports');
-    })->middleware('role:admin|manager');
+    Route::get('/reports', [ReportController::class, 'index'])->middleware('role:admin|manager');
 
     Route::get('/payments', [PaymentController::class, 'index'])->middleware('role:admin|manager');
     Route::post('/payments', [PaymentController::class, 'store'])->middleware('role:admin|manager|staff');
@@ -100,9 +102,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('role:admin|manager');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin|manager');
 
-    Route::get('/support', function () {
-        return Inertia::render('Support');
-    });
+    Route::get('/support', [SupportController::class, 'index']);
+    Route::post('/support', [SupportController::class, 'store']);
 
     Route::get('/sales', [SaleController::class, 'index'])->middleware('role:admin|manager|staff');
     Route::post('/sales', [SaleController::class, 'store'])->middleware('role:admin|manager|staff');
@@ -115,9 +116,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/customers/{customer}', [CustomerController::class, 'update'])->middleware('role:admin|manager|staff');
     Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->middleware('role:admin|manager|staff');
 
-    Route::get('/audit-log', function () {
-        return Inertia::render('AuditLog');
-    })->middleware('role:admin|manager');
+    Route::get('/audit-log', [AuditLogController::class, 'index'])->middleware('role:admin|manager');
 
     // Team & Roles Management
     Route::get('/roles', [TeamController::class, 'index'])->name('roles.index')->middleware('role:admin');
