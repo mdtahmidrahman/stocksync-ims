@@ -52,7 +52,7 @@
               <td class="p-4">
                 <div class="font-medium text-gray-900 dark:text-white">{{ sale.customer ? sale.customer.name : 'Walk-in Customer' }}</div>
               </td>
-              <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">{{ new Date(sale.created_at).toLocaleString() }}</td>
+              <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">{{ formatDateTime(sale.created_at) }}</td>
               <td class="p-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300">
                   {{ sale.payment_method }}
@@ -186,7 +186,7 @@
             </div>
             <div class="flex justify-end gap-2">
                 <button type="button" @click="showPosModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">Cancel Sale</button>
-                <button form="saleForm" type="submit" :disabled="addForm.processing || addForm.items.length === 0" class="px-6 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50">
+                <button @click="submitSale" type="button" :disabled="addForm.processing || addForm.items.length === 0" class="px-6 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     Complete Checkout
                 </button>
@@ -212,6 +212,7 @@ import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
 import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 import { useCurrency } from '../Composables/useCurrency';
+import { formatDateTime } from '../Composables/useDate';
 
 const { currencySymbol } = useCurrency();
 

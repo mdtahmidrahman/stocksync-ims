@@ -43,7 +43,7 @@
               <td class="p-4 font-semibold text-gray-900 dark:text-white">
                 {{ order.order_number }}
               </td>
-              <td class="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</td>
+              <td class="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</td>
               <td class="p-4">
                 <div class="flex items-center gap-2">
                    <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-gray-300 shrink-0">C</div>
@@ -167,7 +167,7 @@
             </div>
             <div class="flex gap-2">
                 <button @click="showAddModal = false" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors">Cancel</button>
-                <button form="orderForm" type="submit" :disabled="addForm.processing || addForm.items.length === 0" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Create Order</button>
+                <button @click="submitOrder" type="button" :disabled="addForm.processing || addForm.items.length === 0" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Create Order</button>
             </div>
         </div>
       </template>
@@ -248,7 +248,7 @@
                     <div v-for="payment in activeOrder.payments" :key="payment.id" class="flex justify-between items-center bg-gray-50 dark:bg-gray-800/30 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">{{ currencySymbol }}{{ parseFloat(payment.amount).toFixed(2) }} via {{ payment.payment_method }}</div>
-                            <div class="text-xs text-gray-500">{{ new Date(payment.payment_date).toLocaleDateString() }} - Ref: {{ payment.reference_number }}</div>
+                            <div class="text-xs text-gray-500">{{ formatDate(payment.payment_date) }} - Ref: {{ payment.reference_number }}</div>
                         </div>
                     </div>
                 </div>
@@ -302,6 +302,7 @@ import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
 import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 import { useCurrency } from '../Composables/useCurrency';
+import { formatDate } from '../Composables/useDate';
 
 const { currencySymbol } = useCurrency();
 

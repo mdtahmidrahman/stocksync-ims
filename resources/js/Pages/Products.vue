@@ -147,10 +147,12 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ({{ currencySymbol }})</label>
               <input v-model="addForm.price" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0.00" />
+              <div v-if="addForm.errors.price" class="text-red-500 text-xs mt-1">{{ addForm.errors.price }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial Stock</label>
-              <input v-model="addForm.stock_level" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0" />
+              <input v-model="addForm.stock_quantity" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0" />
+              <div v-if="addForm.errors.stock_quantity" class="text-red-500 text-xs mt-1">{{ addForm.errors.stock_quantity }}</div>
             </div>
           </div>
           
@@ -189,7 +191,7 @@
           <button @click="showAddModal = false; showCustomProductModal = true" type="button" class="text-sm font-semibold text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">Add Customized Product</button>
           <div class="flex gap-2">
             <button @click="showAddModal = false" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
-            <button form="addProductForm" type="submit" :disabled="addForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Save Product</button>
+            <button @click="saveProduct" type="button" :disabled="addForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Save Product</button>
           </div>
         </div>
       </template>
@@ -250,7 +252,7 @@
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
           <button @click="showEditModal = false" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
-          <button form="editProductForm" type="submit" :disabled="editForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Product</button>
+          <button @click="updateProduct" type="button" :disabled="editForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Product</button>
         </div>
       </template>
     </Modal>
@@ -281,7 +283,7 @@
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
           <button @click="showBulkUploadModal = false" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
-          <button form="importProductsForm" type="submit" :disabled="importForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Upload</button>
+          <button @click="importProducts" type="button" :disabled="importForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Upload</button>
         </div>
       </template>
     </Modal>
@@ -477,7 +479,7 @@ const addForm = useForm({
     sku: '',
     category_id: '',
     price: 0,
-    stock_level: 0,
+    stock_quantity: 0,
     image: null
 });
 
@@ -486,7 +488,7 @@ const editForm = useForm({
     sku: '',
     category_id: '',
     price: 0,
-    stock_level: 0,
+    stock_quantity: 0,
     image: null
 });
 
@@ -510,7 +512,7 @@ const openEditModal = (product) => {
     editForm.sku = product.sku;
     editForm.category_id = product.category_id;
     editForm.price = product.price;
-    editForm.stock_level = product.stock_quantity;
+    editForm.stock_quantity = product.stock_quantity;
     imagePreview.value = product.image_path ? `/storage/${product.image_path}` : '';
     showEditModal.value = true;
 };

@@ -64,7 +64,7 @@
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="company in recent_companies" :key="company.id">
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400">#{{ company.id }}</td>
               <td class="p-4 font-medium text-gray-900 dark:text-white">{{ company.name }}</td>
-              <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ new Date(company.created_at).toLocaleDateString() }}</td>
+              <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ formatDate(company.created_at) }}</td>
               <td class="p-4 text-right">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
                   Active
@@ -84,6 +84,7 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
+import { formatDate } from '../Composables/useDate';
 
 defineProps({
     metrics: Object,

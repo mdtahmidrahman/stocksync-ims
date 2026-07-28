@@ -12,32 +12,26 @@
           <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Create Support Ticket</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Need help with the system? Reach out to the admin team.</p>
           
-          <form class="space-y-4">
+          <form @submit.prevent="submitTicket" class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Category</label>
-              <input type="hidden" name="category" :value="issueCategory">
-              <Dropdown align="left" width="full" fullWidth>
-                <template #trigger>
-                  <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
-                    {{ issueCategory }}
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                  </button>
-                </template>
-                <template #content="{ close }">
-                  <a href="#" v-for="cat in ['System Bug', 'Inventory Discrepancy', 'Billing Issue', 'Other']" :key="cat" @click.prevent="issueCategory = cat; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="issueCategory === cat ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat }}</a>
-                </template>
-              </Dropdown>
+              <select v-model="form.category" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                <option value="System Bug">System Bug</option>
+                <option value="Inventory Discrepancy">Inventory Discrepancy</option>
+                <option value="Billing Issue">Billing Issue</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
-              <input type="text" placeholder="Brief summary of the issue..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+              <input v-model="form.subject" type="text" required placeholder="Brief summary of the issue..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-              <textarea rows="4" placeholder="Detailed explanation..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"></textarea>
+              <textarea v-model="form.message" rows="4" required placeholder="Detailed explanation..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"></textarea>
             </div>
-            <button type="button" class="w-full bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm">
-              Submit Ticket
+            <button type="submit" :disabled="form.processing" class="w-full bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors shadow-sm">
+              {{ form.processing ? 'Submitting...' : 'Submit Ticket' }}
             </button>
           </form>
         </div>
@@ -46,19 +40,18 @@
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 transition-colors">
           <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">My Recent Tickets</h2>
           <div class="space-y-4">
-            <div class="border border-gray-100 dark:border-gray-800 rounded-lg p-3">
-              <div class="flex justify-between items-start mb-1">
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Barcode Scanner not syncing</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">Open</span>
-              </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #8492 â€¢ Submitted 2 hrs ago</div>
+            <div v-if="!tickets || tickets.length === 0" class="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
+              No tickets submitted yet.
             </div>
-            <div class="border border-gray-100 dark:border-gray-800 rounded-lg p-3 opacity-60">
+            <div v-for="ticket in tickets" :key="ticket.id" class="border border-gray-100 dark:border-gray-800 rounded-lg p-3">
               <div class="flex justify-between items-start mb-1">
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Stock report export failing</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300">Resolved</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white truncate pr-2">{{ ticket.subject }}</span>
+                <span :class="[
+                  'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize shrink-0',
+                  ticket.status === 'open' ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
+                ]">{{ ticket.status }}</span>
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #8450 â€¢ Submitted 3 days ago</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Ticket #{{ ticket.id }} • {{ formatDate(ticket.created_at) }}</div>
             </div>
           </div>
         </div>
@@ -88,9 +81,29 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
-import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { formatDate } from '../Composables/useDate';
 
-const issueCategory = ref('System Bug');
+const props = defineProps({
+  tickets: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+const form = useForm({
+  subject: '',
+  category: 'System Bug',
+  message: '',
+});
+
+const submitTicket = () => {
+  form.post('/support', {
+    onSuccess: () => {
+      form.reset('subject', 'message');
+    },
+  });
+};
 
 const faqs = [
     { q: 'How do I transfer stock between warehouses?', a: 'Navigate to the Inventory page, click "Sync Stock", and select "Transfer" as the operation type. You will need to select the Source and Destination warehouse before confirming the quantity.' },

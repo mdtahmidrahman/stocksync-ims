@@ -31,7 +31,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="purchase in purchases.data" :key="purchase.id">
-              <td class="p-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">{{ new Date(purchase.created_at).toLocaleDateString() }}</td>
+              <td class="p-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">{{ formatDate(purchase.created_at) }}</td>
               <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap font-medium">{{ purchase.reference_number }}</td>
               <td class="p-4">
                 <div class="font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ purchase.supplier ? purchase.supplier.name : 'Unknown' }}</div>
@@ -147,7 +147,7 @@
             </div>
             <div class="flex gap-2">
                 <button @click="showAddModal = false" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors">Cancel</button>
-                <button form="purchaseForm" type="submit" :disabled="addForm.processing || addForm.items.length === 0" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Confirm Purchase</button>
+                <button @click="submitPurchase" type="button" :disabled="addForm.processing || addForm.items.length === 0" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Confirm Purchase</button>
             </div>
         </div>
       </template>
@@ -170,6 +170,7 @@ import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
 import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 import { useCurrency } from '../Composables/useCurrency';
+import { formatDate } from '../Composables/useDate';
 
 const { currencySymbol } = useCurrency();
 

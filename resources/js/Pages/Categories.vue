@@ -39,11 +39,18 @@
               </td>
               <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ cat.description }}</td>
               <td class="p-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
-                  Active
+                <span :class="[
+                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize',
+                  cat.is_active !== false ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                ]">
+                  {{ cat.is_active !== false ? 'Active' : 'Inactive' }}
                 </span>
               </td>
-              <td class="p-4 text-sm font-medium text-gray-900 dark:text-white">-</td>
+              <td class="p-4 text-sm font-medium whitespace-nowrap">
+                <Link :href="`/products?category_id=${cat.id}`" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-950/50 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  {{ cat.products_count ?? 0 }} {{ (cat.products_count === 1) ? 'Product' : 'Products' }}
+                </Link>
+              </td>
               <td class="p-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-3">
                   <button @click="openEditModal(cat)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm font-medium mr-2">Edit</button>
@@ -72,11 +79,15 @@
             <textarea v-model="addForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Brief description of the category..."></textarea>
             <div v-if="addForm.errors.description" class="text-red-500 text-xs mt-1">{{ addForm.errors.description }}</div>
           </div>
+          <div class="flex items-center gap-2 pt-2">
+            <input v-model="addForm.is_active" type="checkbox" id="add_is_active" class="rounded border-gray-300 dark:border-gray-700 text-primary-600 focus:ring-primary-500" />
+            <label for="add_is_active" class="text-sm font-medium text-gray-700 dark:text-gray-300">Active Category</label>
+          </div>
         </form>
       </template>
       <template #footer>
         <button @click="showAddModal = false" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors">Cancel</button>
-        <button form="addCategoryForm" type="submit" :disabled="addForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Save Category</button>
+        <button @click="saveCategory" type="button" :disabled="addForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Save Category</button>
       </template>
     </Modal>
 
@@ -94,11 +105,15 @@
             <textarea v-model="editForm.description" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"></textarea>
             <div v-if="editForm.errors.description" class="text-red-500 text-xs mt-1">{{ editForm.errors.description }}</div>
           </div>
+          <div class="flex items-center gap-2 pt-2">
+            <input v-model="editForm.is_active" type="checkbox" id="edit_is_active" class="rounded border-gray-300 dark:border-gray-700 text-primary-600 focus:ring-primary-500" />
+            <label for="edit_is_active" class="text-sm font-medium text-gray-700 dark:text-gray-300">Active Category</label>
+          </div>
         </form>
       </template>
       <template #footer>
         <button @click="showEditModal = false" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors">Cancel</button>
-        <button form="editCategoryForm" type="submit" :disabled="editForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Category</button>
+        <button @click="updateCategory" type="button" :disabled="editForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Category</button>
       </template>
     </Modal>
     <!-- Delete Confirmation Modal -->
@@ -113,7 +128,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, Link } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
@@ -170,12 +185,14 @@ const editingCategoryId = ref(null);
 
 const addForm = useForm({
     name: '',
-    description: ''
+    description: '',
+    is_active: true
 });
 
 const editForm = useForm({
     name: '',
-    description: ''
+    description: '',
+    is_active: true
 });
 
 const saveCategory = () => {
@@ -192,6 +209,7 @@ const openEditModal = (cat) => {
     editingCategoryId.value = cat.id;
     editForm.name = cat.name;
     editForm.description = cat.description;
+    editForm.is_active = Boolean(cat.is_active !== false);
     showEditModal.value = true;
 };
 
