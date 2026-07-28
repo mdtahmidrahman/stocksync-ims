@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,11 +29,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $request->user()->update([
+        $user = $request->user();
+        $user->update([
             'last_login_at' => now(),
         ]);
 
-        if ($request->user()->isSuperAdmin()) {
+        AuditLog::record('User Login', "User '{$user->name}' ({$user->email}) logged into the system.");
+
+        if ($user->isSuperAdmin()) {
             return redirect()->intended('/platform');
         }
 
@@ -44,6 +48,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request)
     {
+        $user = Auth::user();
+        if ($user) {
+            AuditLog::record('User Logout', "User '{$user->name}' ({$user->email}) logged out of the system.");
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

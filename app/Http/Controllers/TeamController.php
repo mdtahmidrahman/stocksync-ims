@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -47,6 +48,11 @@ class TeamController extends Controller
 
         $user->assignRole($request->role);
 
+        AuditLog::record(
+            'Team Member Added',
+            "Added team member '{$user->name}' ({$user->email}) with role '{$user->role}'."
+        );
+
         return redirect()->back()->with('success', 'Team member added successfully.');
     }
 
@@ -65,11 +71,19 @@ class TeamController extends Controller
             return redirect()->back()->with('error', 'You cannot edit your own role.');
         }
 
+        $oldRole = ucfirst($user->role);
+        $newRole = ucfirst($request->role);
+
         $user->update([
             'role' => $request->role,
         ]);
 
         $user->syncRoles([$request->role]);
+
+        AuditLog::record(
+            'Role Changed',
+            "Role for team member '{$user->name}' ({$user->email}) changed from '{$oldRole}' to '{$newRole}'."
+        );
 
         return redirect()->back()->with('success', 'Team member updated successfully.');
     }
@@ -89,7 +103,15 @@ class TeamController extends Controller
             return redirect()->back()->with('error', 'You cannot delete yourself.');
         }
 
+        $name = $user->name;
+        $email = $user->email;
+
         $user->delete();
+
+        AuditLog::record(
+            'Team Member Removed',
+            "Removed team member '{$name}' ({$email}) from the company."
+        );
 
         return redirect()->back()->with('success', 'Team member removed successfully.');
     }

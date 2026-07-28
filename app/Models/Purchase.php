@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Purchase extends Model
 {
     use \App\Traits\BelongsToCompany;
+    use \App\Traits\LogsActivity;
 
     protected $fillable = [
         'company_id',
