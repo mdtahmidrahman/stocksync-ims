@@ -94,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/purchases', [PurchaseController::class, 'store'])->middleware('role:admin|manager');
     Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('role:admin|manager');
 
+    Route::get('/reports/export', [ReportController::class, 'export'])->middleware('role:admin|manager');
     Route::get('/reports', [ReportController::class, 'index'])->middleware('role:admin|manager');
 
     Route::get('/payments', [PaymentController::class, 'index'])->middleware('role:admin|manager');

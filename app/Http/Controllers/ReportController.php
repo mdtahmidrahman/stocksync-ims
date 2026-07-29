@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -68,5 +69,52 @@ class ReportController extends Controller
             'lowStockProducts' => $lowStockProducts,
             'dateRange' => $range,
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $range = $request->query('range', 'Last 30 Days');
+        
+        $startDate = match ($range) {
+            'This Month' => Carbon::now()->startOfMonth(),
+            'This Year' => Carbon::now()->startOfYear(),
+            default => Carbon::now()->subDays(30),
+        };
+
+        $totalPurchases = (float) Purchase::where('created_at', '>=', $startDate)->sum('total_amount');
+        $totalSales = (float) Sale::where('created_at', '>=', $startDate)->sum('total_amount');
+        
+        $purchases = Purchase::with(['payments', 'supplier'])->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
+        $purchaseDue = (float) $purchases->sum(function ($p) {
+            return max(0, $p->total_amount - $p->payments->sum('amount'));
+        });
+
+        $sales = Sale::with(['payments', 'customer'])->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
+        $salesDue = (float) $sales->sum(function ($s) {
+            return max(0, $s->total_amount - $s->payments->sum('amount'));
+        });
+
+        $lowStockProducts = Product::with('category')
+            ->where('stock_quantity', '<=', 5)
+            ->orderBy('stock_quantity', 'asc')
+            ->take(20)
+            ->get();
+
+        $company = auth()->user()->company;
+
+        $pdf = Pdf::loadView('reports.pdf', [
+            'company' => $company,
+            'range' => $range,
+            'totalPurchases' => $totalPurchases,
+            'totalSales' => $totalSales,
+            'purchaseDue' => $purchaseDue,
+            'salesDue' => $salesDue,
+            'sales' => $sales,
+            'purchases' => $purchases,
+            'lowStockProducts' => $lowStockProducts,
+            'generatedAt' => Carbon::now()->format('d/m/Y, h:i A')
+        ]);
+
+        return $pdf->download("Financial_Report_" . str_replace(' ', '_', $range) . ".pdf");
     }
 }
