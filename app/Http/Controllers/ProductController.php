@@ -63,18 +63,23 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Product created successfully.');
     }
 
-    public function show(Product $product)
-    {
-        return response()->json($product->load('category'));
-    }
-
     public function update(UpdateProductRequest $request, Product $product)
     {
         if ($request->has('stock_level')) {
             $request->merge(['stock_quantity' => $request->stock_level]);
         }
 
-        $product->update($request->all());
+        $productData = $request->except(['image', 'stock_level']);
+
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+            }
+            $productData['image_path'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product->update($productData);
         $product->load('category');
 
         return redirect()->back()->with('success', 'Product updated successfully.');

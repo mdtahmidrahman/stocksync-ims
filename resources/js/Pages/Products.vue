@@ -112,7 +112,7 @@
                 <svg v-else class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
               <div class="relative">
-                <input type="file" accept="image/*" @change="handleImageUpload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <input type="file" accept="image/*" @change="handleAddImageUpload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 <button type="button" class="text-sm text-primary-600 font-medium">Upload Image</button>
               </div>
             </div>
@@ -138,7 +138,13 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="cat in categories" :key="cat.id" @click.prevent="addForm.category_id = cat.id; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="addForm.category_id === cat.id ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
+                  <div class="p-2 border-b border-gray-100 dark:border-gray-800">
+                    <input v-model="categorySearchQuery" type="text" placeholder="Type to search..." class="w-full px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500" @click.stop />
+                  </div>
+                  <div class="max-h-60 overflow-y-auto">
+                    <a href="#" v-for="cat in filteredCategories" :key="cat.id" @click.prevent="addForm.category_id = cat.id; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="addForm.category_id === cat.id ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
+                    <div v-if="filteredCategories.length === 0" class="px-4 py-2 text-sm text-gray-500 text-center">No categories found</div>
+                  </div>
                 </template>
               </Dropdown>
             </div>
@@ -153,35 +159,6 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial Stock</label>
               <input v-model="addForm.stock_quantity" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="0" />
               <div v-if="addForm.errors.stock_quantity" class="text-red-500 text-xs mt-1">{{ addForm.errors.stock_quantity }}</div>
-            </div>
-          </div>
-          
-          <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Smart Reorder Engine</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reorder Point</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. 20" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reorder Qty</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. 100" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Supplier</label>
-                <Dropdown align="left" width="full" fullWidth>
-                  <template #trigger>
-                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
-                      <span class="truncate pr-2">Select...</span>
-                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                  </template>
-                  <template #content="{ close }">
-                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">TechCorp Inc.</a>
-                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Global Supplies Ltd</a>
-                  </template>
-                </Dropdown>
-              </div>
             </div>
           </div>
         </form>
@@ -201,7 +178,21 @@
     <Modal :show="showEditModal" @close="showEditModal = false">
       <template #title>Edit Product</template>
       <template #body>
-        <form @submit.prevent="updateProduct" id="editProductForm" class="space-y-4">
+        <form @submit.prevent="saveEdit" id="editProductForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Image</label>
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden relative">
+                <img v-if="editImagePreview" :src="editImagePreview" class="w-full h-full object-cover" />
+                <svg v-else class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+              <div class="relative">
+                <input type="file" accept="image/*" @change="handleEditImageUpload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <button type="button" class="text-sm text-primary-600 font-medium">Change Image</button>
+              </div>
+            </div>
+            <div v-if="editForm.errors.image" class="text-red-500 text-xs mt-1">{{ editForm.errors.image }}</div>
+          </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
             <input v-model="editForm.name" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
@@ -214,37 +205,34 @@
               <div v-if="editForm.errors.sku" class="text-red-500 text-xs mt-1">{{ editForm.errors.sku }}</div>
             </div>
             <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+              <Dropdown align="left" width="full" fullWidth>
+                <template #trigger>
+                  <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                    <span :class="!editForm.category_id ? 'text-gray-500' : ''">{{ editForm.category_id ? categories.find(c => c.id === editForm.category_id)?.name : 'Select a category' }}</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                </template>
+                <template #content="{ close }">
+                  <div class="p-2 border-b border-gray-100 dark:border-gray-800">
+                    <input v-model="categorySearchQuery" type="text" placeholder="Type to search..." class="w-full px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500" @click.stop />
+                  </div>
+                  <div class="max-h-60 overflow-y-auto">
+                    <a href="#" v-for="cat in filteredCategories" :key="cat.id" @click.prevent="editForm.category_id = cat.id; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="editForm.category_id === cat.id ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ cat.name }}</a>
+                    <div v-if="filteredCategories.length === 0" class="px-4 py-2 text-sm text-gray-500 text-center">No categories found</div>
+                  </div>
+                </template>
+              </Dropdown>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ({{ currencySymbol }})</label>
               <input v-model="editForm.price" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
             </div>
-          </div>
-          
-          <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Smart Reorder Engine</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reorder Point</label>
-                <input type="number" value="20" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. 20" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reorder Qty</label>
-                <input type="number" value="150" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="e.g. 100" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Supplier</label>
-                <Dropdown align="left" width="full" fullWidth>
-                  <template #trigger>
-                    <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
-                      <span class="truncate pr-2">TechCorp Inc.</span>
-                      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                  </template>
-                  <template #content="{ close }">
-                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">TechCorp Inc.</a>
-                    <a href="#" @click.prevent="close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">Global Supplies Ltd</a>
-                  </template>
-                </Dropdown>
-              </div>
+             <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock Level</label>
+              <input v-model="editForm.stock_quantity" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
             </div>
           </div>
         </form>
@@ -252,7 +240,7 @@
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
           <button @click="showEditModal = false" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">Cancel</button>
-          <button @click="updateProduct" type="button" :disabled="editForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Product</button>
+          <button @click="saveEdit" type="button" :disabled="editForm.processing" class="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50">Update Product</button>
         </div>
       </template>
     </Modal>
@@ -390,7 +378,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { router, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
@@ -461,40 +449,71 @@ const showCustomProductModal = ref(false);
 const showBarcodeModal = ref(false);
 const editingProductId = ref(null);
 
-const imageFile = ref(null);
 const imagePreview = ref('');
-
-const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        imageFile.value = file;
-        imagePreview.value = URL.createObjectURL(file);
-        addForm.image = file;
-        editForm.image = file;
-    }
-};
+const editImagePreview = ref(null);
 
 const addForm = useForm({
     name: '',
     sku: '',
+    description: '',
     category_id: '',
-    price: 0,
-    stock_quantity: 0,
-    image: null
+    price: '',
+    stock_quantity: '',
+    reorder_level: '',
+    image: null,
 });
 
 const editForm = useForm({
+    id: null,
     name: '',
     sku: '',
+    description: '',
     category_id: '',
-    price: 0,
-    stock_quantity: 0,
-    image: null
+    price: '',
+    stock_quantity: '',
+    reorder_level: '',
+    image: null,
 });
 
 const importForm = useForm({
     file: null
 });
+
+const categorySearchQuery = ref('');
+
+const filteredCategories = computed(() => {
+  if (!categorySearchQuery.value) return props.categories;
+  const q = categorySearchQuery.value.toLowerCase();
+  return props.categories.filter(c => c.name.toLowerCase().includes(q));
+});
+
+watch([showAddModal, showEditModal], () => {
+    categorySearchQuery.value = '';
+});
+
+const handleAddImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        addForm.image = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        editForm.image = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            editImagePreview.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
 const importProducts = () => {
     importForm.post('/products/import', {
@@ -508,12 +527,14 @@ const importProducts = () => {
 
 const openEditModal = (product) => {
     editingProductId.value = product.id;
+    editForm.id = product.id;
     editForm.name = product.name;
     editForm.sku = product.sku;
     editForm.category_id = product.category_id;
     editForm.price = product.price;
     editForm.stock_quantity = product.stock_quantity;
-    imagePreview.value = product.image_path ? `/storage/${product.image_path}` : '';
+    editForm.image = null;
+    editImagePreview.value = product.image_path ? `/storage/${product.image_path}` : null;
     showEditModal.value = true;
 };
 
@@ -523,26 +544,35 @@ const saveProduct = () => {
         onSuccess: () => {
             showAddModal.value = false;
             addForm.reset();
-            imageFile.value = null;
             imagePreview.value = '';
         }
     });
 };
 
-const updateProduct = () => {
+const saveEdit = () => {
     // Inertia requires _method = put for file uploads to work properly
-    editForm.transform((data) => ({
-      ...data,
-      _method: 'put',
-    })).post(`/products/${editingProductId.value}`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            showEditModal.value = false;
-            editForm.reset();
-            imageFile.value = null;
-            imagePreview.value = '';
-        }
-    });
+    if (editForm.image) {
+        editForm.transform((data) => ({
+            ...data,
+            _method: 'put',
+        })).post(`/products/${editForm.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showEditModal.value = false;
+                editForm.reset();
+                editImagePreview.value = null;
+            }
+        });
+    } else {
+        editForm.put(`/products/${editForm.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showEditModal.value = false;
+                editForm.reset();
+                editImagePreview.value = null;
+            }
+        });
+    }
 };
 
 const showDeleteModal = ref(false);
