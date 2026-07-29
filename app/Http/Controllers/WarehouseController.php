@@ -35,11 +35,6 @@ class WarehouseController extends Controller
         return redirect()->back()->with('success', 'Warehouse created successfully.');
     }
 
-    public function show(Warehouse $warehouse)
-    {
-        return response()->json($warehouse);
-    }
-
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse)
     {
         $warehouse->update($request->validated());

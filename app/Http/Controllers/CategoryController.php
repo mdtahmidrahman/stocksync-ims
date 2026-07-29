@@ -35,11 +35,6 @@ class CategoryController extends Controller
         return redirect()->back()->with('success', 'Category created successfully.');
     }
 
-    public function show(Category $category)
-    {
-        return response()->json($category);
-    }
-
     public function update(UpdateCategoryRequest $request, Category $category)
     {
         $category->update($request->validated());

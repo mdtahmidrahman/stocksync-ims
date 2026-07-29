@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
         AuditLog::record('User Login', "User '{$user->name}' ({$user->email}) logged into the system.");
 
         if ($user->isSuperAdmin()) {
-            return redirect()->intended('/platform');
+            return redirect()->to('/platform');
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

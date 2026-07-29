@@ -17,7 +17,7 @@ class PlatformController extends Controller
     {
         // Ensure only Super Admins can access this
         if (!Auth::user()->isSuperAdmin()) {
-            return response()->json(['message' => 'Unauthorized access.'], 403);
+            abort(403, 'Unauthorized access.');
         }
 
         // We use withoutGlobalScopes() to bypass the TenantScope

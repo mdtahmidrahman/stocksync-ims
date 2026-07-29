@@ -36,8 +36,8 @@ StockSync is a modern, high-performance Inventory Management System (IMS) design
 - [x] **Financials & Transactions (UI):** Interfaces for Sales, Purchases, Orders, and Payments.
 - [x] **Stakeholders (UI):** Dedicated CRM-lite views for Suppliers and Customers.
 - [x] **Administration (UI):** Settings panels, Role management, and Audit Logs.
-- [ ] **Database Schema & Migrations:** Define exact table structures, foreign keys, and indexes for Products, Sales, Purchases, etc.
-- [ ] **Backend CRUD Controllers:** Wire up the UI to perform actual database mutations (Create, Read, Update, Delete) via Laravel Controllers.
+- [x] **Database Schema & Migrations:** Define exact table structures, foreign keys, and indexes for Products, Sales, Purchases, etc.
+- [x] **Backend CRUD Controllers:** Wire up the UI to perform actual database mutations (Create, Read, Update, Delete) via Laravel Controllers.
 - [x] **Form Validation:** Implement strict server-side validation using Laravel FormRequests for all data entries.
 - [ ] **Dashboard Analytics:** Build complex Eloquent queries to aggregate real-time data for the Dashboard charts and metric cards.
 - [x] **File Uploads & Exporting:** Wire up CSV/Excel parsing for bulk product imports, and implement PDF generation for invoices/receipts.
