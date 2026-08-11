@@ -207,53 +207,139 @@
         </div>
       </div>
 
+      <!-- Order Fulfillment Pipeline & Top Category Performance -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Order Pipeline -->
+        <div class="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Customer Order Fulfillment Pipeline</h2>
+              <p class="text-xs font-medium text-gray-400 mt-0.5">Live order processing stages</p>
+            </div>
+            <Link href="/orders" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">Manage Orders &rarr;</Link>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+            <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 text-center">
+              <div class="text-xs font-semibold text-yellow-500 uppercase tracking-wide">Pending</div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ orderPipeline?.pending || 0 }}</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Awaiting Action</div>
+            </div>
+
+            <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
+              <div class="text-xs font-semibold text-blue-500 uppercase tracking-wide">Processing</div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ orderPipeline?.processing || 0 }}</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">In Warehouse</div>
+            </div>
+
+            <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 text-center">
+              <div class="text-xs font-semibold text-indigo-500 uppercase tracking-wide">Shipped</div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ orderPipeline?.shipped || 0 }}</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">In Transit</div>
+            </div>
+
+            <div class="bg-green-500/10 border border-green-500/20 rounded-xl p-4 text-center">
+              <div class="text-xs font-semibold text-green-500 uppercase tracking-wide">Delivered</div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ orderPipeline?.delivered || 0 }}</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Performance -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Top Categories</h2>
+            <span class="text-xs text-gray-400 font-medium">By Revenue</span>
+          </div>
+
+          <div class="space-y-4 mt-2">
+            <div v-for="cat in topCategories" :key="cat.name">
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-gray-800 dark:text-gray-200">{{ cat.name }}</span>
+                <span class="text-primary-600 dark:text-primary-400">{{ currencySymbol }}{{ Number(cat.revenue).toLocaleString('en-US', {maximumFractionDigits: 0}) }}</span>
+              </div>
+              <div class="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-primary-600 h-full rounded-full transition-all duration-500" :style="{ width: `${cat.percentage}%` }"></div>
+              </div>
+            </div>
+
+            <div v-if="!topCategories || topCategories.length === 0" class="text-xs text-gray-400 italic text-center py-4">
+              No category sales data recorded.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Bottom Row: Granular Insights -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         <!-- Top Performing Products -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div class="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
           <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Top Performing Products</h2>
-            <Link href="/products" class="text-sm font-semibold text-primary-600 hover:text-primary-800">View All</Link>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Top Performing Products</h2>
+              <p class="text-xs text-gray-400 font-medium mt-0.5">Best-selling inventory by revenue share</p>
+            </div>
+            <Link href="/products" class="text-xs font-bold text-primary-600 hover:text-primary-800">View All Products &rarr;</Link>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
               <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
                 <tr>
                   <th class="p-4 font-semibold">Product</th>
-                  <th class="p-4 font-semibold text-right">Units Sold</th>
-                  <th class="p-4 font-semibold text-center">7-Day Trend</th>
-                  <th class="p-4 font-semibold text-right">Revenue</th>
+                  <th class="p-4 font-semibold text-center">Volume Sold</th>
+                  <th class="p-4 font-semibold">Sales Revenue Share</th>
+                  <th class="p-4 font-semibold text-right">Total Revenue</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                 <tr v-for="item in topProducts" :key="item.product_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                   <td class="p-4">
                     <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0 text-gray-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-900/30 flex items-center justify-center shrink-0 text-primary-600 dark:text-primary-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                       </div>
                       <div>
-                        <div class="font-semibold text-gray-900 dark:text-white">{{ item.product?.name || 'Unknown' }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.product?.sku || 'N/A' }}</div>
+                        <div class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          {{ item.name }}
+                          <span class="px-2 py-0.5 text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md">
+                            {{ item.category }}
+                          </span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
+                          <span>SKU: {{ item.sku }}</span>
+                          <span>•</span>
+                          <span :class="item.stock_quantity <= 5 ? 'text-amber-500 font-semibold' : 'text-gray-400'">
+                            {{ item.stock_quantity }} in stock
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </td>
-                  <td class="p-4 text-right font-medium text-gray-900 dark:text-white">{{ item.total_sold }}</td>
+                  <td class="p-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/40">
+                      {{ item.total_sold }} units
+                    </span>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{{ currencySymbol }}{{ Number(item.price).toLocaleString() }} each</div>
+                  </td>
                   <td class="p-4">
-                    <div class="flex items-end justify-center gap-1 h-8">
-                      <!-- Dummy sparkline for visual effect -->
-                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${20 + Math.random() * 50}%` }"></div>
-                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${40 - Math.random() * 20}%` }"></div>
-                      <div class="w-1.5 bg-primary-300 dark:bg-primary-800/50 rounded-t-sm" :style="{ height: `${60 - Math.random() * 20}%` }"></div>
-                      <div class="w-1.5 bg-primary-400 dark:bg-primary-700/50 rounded-t-sm" :style="{ height: `${50 + Math.random() * 30}%` }"></div>
-                      <div class="w-1.5 bg-primary-600 dark:bg-primary-500 rounded-t-sm" :style="{ height: `${100 - Math.random() * 20}%` }"></div>
+                    <div class="w-full">
+                      <div class="flex justify-between text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                        <span>Contribution</span>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">{{ item.share_percentage }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-gradient-to-r from-primary-600 to-indigo-500 h-full rounded-full transition-all duration-500" :style="{ width: `${item.share_percentage}%` }"></div>
+                      </div>
                     </div>
                   </td>
-                  <td class="p-4 text-right font-medium text-green-600 dark:text-green-400">{{ currencySymbol }}{{ Number(item.total_revenue).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+                  <td class="p-4 text-right font-extrabold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    {{ currencySymbol }}{{ Number(item.total_revenue).toLocaleString('en-US', {minimumFractionDigits: 2}) }}
+                  </td>
                 </tr>
-                <tr v-if="topProducts.length === 0">
-                    <td colspan="4" class="p-4 text-center text-gray-500 dark:text-gray-400">No sales data available.</td>
+                <tr v-if="!topProducts || topProducts.length === 0">
+                    <td colspan="4" class="p-6 text-center text-gray-500 dark:text-gray-400">No product sales data recorded yet.</td>
                 </tr>
               </tbody>
             </table>
@@ -261,20 +347,10 @@
         </div>
         
         <!-- Recent Activity Timeline -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+        <div class="xl:col-span-1 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-bold text-gray-900 dark:text-white">Recent Activity</h2>
-            <Dropdown align="right" width="48">
-              <template #trigger>
-                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
-                </button>
-              </template>
-              <template #content="{ close }">
-                <Link href="/audit-log" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="close">View All Activity</Link>
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click.prevent="close">Export Log</a>
-              </template>
-            </Dropdown>
+            <Link href="/audit-log" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">View Audit Log &rarr;</Link>
           </div>
           
           <div class="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-6">
@@ -320,6 +396,8 @@ const props = defineProps({
   stockStatus: Object,
   weeklySalesRestock: Array,
   topProducts: Array,
+  topCategories: Array,
+  orderPipeline: Object,
   attentionFeed: Array,
   recentActivity: Array
 });

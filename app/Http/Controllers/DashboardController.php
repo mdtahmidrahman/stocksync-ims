@@ -82,13 +82,29 @@ class DashboardController extends Controller
         }
 
         // Top Performing Products (by Revenue)
+        $totalSalesRev = (clone $saleItemQuery)->sum('subtotal') ?: 1;
+
         $topProducts = (clone $saleItemQuery)
             ->select('product_id', DB::raw('SUM(quantity) as total_sold'), DB::raw('SUM(subtotal) as total_revenue'))
-            ->with('product')
+            ->with(['product.category'])
             ->groupBy('product_id')
             ->orderByDesc('total_revenue')
-            ->limit(4)
-            ->get();
+            ->limit(5)
+            ->get()
+            ->map(function ($item) use ($totalSalesRev) {
+                $product = $item->product;
+                return [
+                    'product_id' => $item->product_id,
+                    'name' => $product ? $product->name : 'Unknown Product',
+                    'sku' => $product ? $product->sku : 'N/A',
+                    'category' => ($product && $product->category) ? $product->category->name : 'General',
+                    'stock_quantity' => $product ? $product->stock_quantity : 0,
+                    'price' => $product ? (float) $product->price : 0,
+                    'total_sold' => (int) $item->total_sold,
+                    'total_revenue' => (float) $item->total_revenue,
+                    'share_percentage' => min(100, round(($item->total_revenue / $totalSalesRev) * 100, 1)),
+                ];
+            });
 
         // Attention Required Feed
         $attentionFeed = (clone $productQuery)->where('stock_quantity', '<', 10)->limit(4)->get()->map(function ($product) {
@@ -122,6 +138,57 @@ class DashboardController extends Controller
 
         $recentActivity = collect($recentSales)->merge($recentPurchases)->sortByDesc('created_at')->take(5)->values();
 
+        // Monthly Financials & Profit
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $monthlyPosSales = (clone $saleQuery)->where('created_at', '>=', $startOfMonth)->sum('total_amount');
+        $monthlyOrders = Order::query()->when($companyId, fn($q) => $q->where('company_id', $companyId))->where('created_at', '>=', $startOfMonth)->sum('total_amount');
+        $monthlyRevenue = $monthlyPosSales + $monthlyOrders;
+
+        // Cost of Goods Sold (COGS) for current month
+        $cogsSales = (clone $saleItemQuery)->where('sale_items.created_at', '>=', $startOfMonth)->join('products', 'sale_items.product_id', '=', 'products.id')->sum(DB::raw('sale_items.quantity * products.cost'));
+        $cogsOrders = \App\Models\OrderItem::query()->whereHas('order', function($q) use ($companyId, $startOfMonth) {
+            if ($companyId) $q->where('company_id', $companyId);
+            $q->where('created_at', '>=', $startOfMonth);
+        })->join('products', 'order_items.product_id', '=', 'products.id')->sum(DB::raw('order_items.quantity * products.cost'));
+        
+        $totalCogs = $cogsSales + $cogsOrders;
+        $monthlyGrossProfit = max(0, $monthlyRevenue - $totalCogs);
+
+        // Uncollected Customer Receivables (Dues)
+        $uncollectedOrders = Order::query()->when($companyId, fn($q) => $q->where('company_id', $companyId))->with('payments')->get();
+        $totalReceivables = (float) $uncollectedOrders->sum(fn($o) => max(0, $o->total_amount - $o->payments->sum('amount')));
+
+        // Order Pipeline Status Counts
+        $orderQuery = Order::query()->when($companyId, fn($q) => $q->where('company_id', $companyId));
+        $orderPipeline = [
+            'pending' => (clone $orderQuery)->where('status', 'pending')->count(),
+            'processing' => (clone $orderQuery)->where('status', 'processing')->count(),
+            'shipped' => (clone $orderQuery)->where('status', 'shipped')->count(),
+            'delivered' => (clone $orderQuery)->where('status', 'delivered')->count(),
+        ];
+
+        // Top Selling Categories Breakdown
+        $categorySales = DB::table('sale_items')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->when($companyId, fn($q) => $q->where('sales.company_id', $companyId))
+            ->select('categories.name', DB::raw('SUM(sale_items.subtotal) as total_revenue'), DB::raw('SUM(sale_items.quantity) as total_sold'))
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total_revenue')
+            ->limit(5)
+            ->get();
+
+        $totalCategoryRev = $categorySales->sum('total_revenue') ?: 1;
+        $topCategories = $categorySales->map(function($cat) use ($totalCategoryRev) {
+            return [
+                'name' => $cat->name,
+                'revenue' => (float) $cat->total_revenue,
+                'sold' => (int) $cat->total_sold,
+                'percentage' => min(100, round(($cat->total_revenue / $totalCategoryRev) * 100)),
+            ];
+        });
+
         return Inertia::render('Dashboard', [
             'kpis' => [
                 'totalInventoryValue' => $totalInventoryValue,
@@ -134,6 +201,9 @@ class DashboardController extends Controller
                 'todaySalesPositive' => $salesGrowth >= 0,
                 'pendingDeliveries' => $pendingDeliveries,
                 'pendingDeliveriesBadge' => $pendingDeliveries > 0 ? "{$pendingDeliveries} Open POs" : "Up to Date",
+                'monthlyRevenue' => $monthlyRevenue,
+                'monthlyGrossProfit' => $monthlyGrossProfit,
+                'totalReceivables' => $totalReceivables,
             ],
             'stockStatus' => [
                 'healthy' => $healthyStockCount,
@@ -143,6 +213,8 @@ class DashboardController extends Controller
             ],
             'weeklySalesRestock' => $weeklySalesRestock,
             'topProducts' => $topProducts,
+            'topCategories' => $topCategories,
+            'orderPipeline' => $orderPipeline,
             'attentionFeed' => $attentionFeed,
             'recentActivity' => $recentActivity,
         ]);
