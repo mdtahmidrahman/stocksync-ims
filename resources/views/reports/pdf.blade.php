@@ -114,25 +114,25 @@
     <div class="metrics-container">
         <div class="metric-box">
             <div class="metric-title">Total Purchases</div>
-            <div class="metric-value">${{ number_format($totalPurchases, 2) }}</div>
+            <div class="metric-value">{{ $currency ?? 'Tk.' }} {{ number_format($totalPurchases, 2) }}</div>
         </div>
         <div class="metric-box">
             <div class="metric-title">Total Sales</div>
-            <div class="metric-value">${{ number_format($totalSales, 2) }}</div>
+            <div class="metric-value">{{ $currency ?? 'Tk.' }} {{ number_format($totalSales, 2) }}</div>
         </div>
         <div class="metric-box">
             <div class="metric-title">Purchase Dues</div>
-            <div class="metric-value" style="color: #ef4444;">${{ number_format($purchaseDue, 2) }}</div>
+            <div class="metric-value" style="color: #ef4444;">{{ $currency ?? 'Tk.' }} {{ number_format($purchaseDue, 2) }}</div>
         </div>
         <div class="metric-box last">
             <div class="metric-title">Sales Dues</div>
-            <div class="metric-value" style="color: #ef4444;">${{ number_format($salesDue, 2) }}</div>
+            <div class="metric-value" style="color: #ef4444;">{{ $currency ?? 'Tk.' }} {{ number_format($salesDue, 2) }}</div>
         </div>
     </div>
 
     <!-- Recent Sales Activity -->
-    <div class="section-title">Sales Activity Breakdown</div>
-    @if($sales->count() > 0)
+    <div class="section-title">Sales & Order Activity Breakdown</div>
+    @if(($sales->count() > 0) || (isset($orders) && $orders->count() > 0))
         <table>
             <thead>
                 <tr>
@@ -145,6 +145,26 @@
                 </tr>
             </thead>
             <tbody>
+                @foreach($orders as $order)
+                @php
+                    $paid = $order->payments->sum('amount');
+                    $due = max(0, $order->total_amount - $paid);
+                @endphp
+                <tr>
+                    <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
+                    <td>{{ $order->order_number }}</td>
+                    <td>{{ $order->customer->name ?? 'Walk-in Customer' }}</td>
+                    <td class="text-right">{{ $currency ?? 'Tk.' }} {{ number_format($order->total_amount, 2) }}</td>
+                    <td class="text-right">{{ $currency ?? 'Tk.' }} {{ number_format($paid, 2) }}</td>
+                    <td class="text-right">
+                        @if($due > 0)
+                            <span class="status-due">{{ $currency ?? 'Tk.' }} {{ number_format($due, 2) }}</span>
+                        @else
+                            <span class="status-paid">Paid</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
                 @foreach($sales as $sale)
                 @php
                     $paid = $sale->payments->sum('amount');
@@ -154,11 +174,11 @@
                     <td>{{ \Carbon\Carbon::parse($sale->created_at)->format('d/m/Y') }}</td>
                     <td>{{ $sale->reference_number ?? ('SALE-' . $sale->id) }}</td>
                     <td>{{ $sale->customer->name ?? 'Walk-in Customer' }}</td>
-                    <td class="text-right">${{ number_format($sale->total_amount, 2) }}</td>
-                    <td class="text-right">${{ number_format($paid, 2) }}</td>
+                    <td class="text-right">{{ $currency ?? 'Tk.' }} {{ number_format($sale->total_amount, 2) }}</td>
+                    <td class="text-right">{{ $currency ?? 'Tk.' }} {{ number_format($paid, 2) }}</td>
                     <td class="text-right">
                         @if($due > 0)
-                            <span class="status-due">${{ number_format($due, 2) }}</span>
+                            <span class="status-due">{{ $currency ?? 'Tk.' }} {{ number_format($due, 2) }}</span>
                         @else
                             <span class="status-paid">Paid</span>
                         @endif
@@ -195,11 +215,11 @@
                     <td>{{ \Carbon\Carbon::parse($purchase->created_at)->format('d/m/Y') }}</td>
                     <td>{{ $purchase->reference_number ?? ('PUR-' . $purchase->id) }}</td>
                     <td>{{ $purchase->supplier->name ?? 'Unknown Supplier' }}</td>
-                    <td class="text-right">${{ number_format($purchase->total_amount, 2) }}</td>
-                    <td class="text-right">${{ number_format($paid, 2) }}</td>
+                    <td class="text-right">{{ $currency ?? 'Tk.' }} {{ number_format($purchase->total_amount, 2) }}</td>
+                    <td class="text-right">{{ $currency ?? 'Tk.' }} {{ number_format($paid, 2) }}</td>
                     <td class="text-right">
                         @if($due > 0)
-                            <span class="status-due">${{ number_format($due, 2) }}</span>
+                            <span class="status-due">{{ $currency ?? 'Tk.' }} {{ number_format($due, 2) }}</span>
                         @else
                             <span class="status-paid">Paid</span>
                         @endif

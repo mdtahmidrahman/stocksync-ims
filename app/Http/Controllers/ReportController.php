@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\Order;
 use App\Models\Purchase;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -22,20 +23,33 @@ class ReportController extends Controller
             default => Carbon::now()->subDays(30),
         };
 
-        $totalPurchases = (float) Purchase::where('created_at', '>=', $startDate)->sum('total_amount');
-        $totalSales = (float) Sale::where('created_at', '>=', $startDate)->sum('total_amount');
+        $companyId = auth()->user() ? auth()->user()->company_id : 1;
+
+        $totalPurchases = (float) Purchase::where('company_id', $companyId)->where('created_at', '>=', $startDate)->sum('total_amount');
         
-        $purchases = Purchase::with('payments')->where('created_at', '>=', $startDate)->get();
+        $posSalesSum = (float) Sale::where('company_id', $companyId)->where('created_at', '>=', $startDate)->sum('total_amount');
+        $orderSalesSum = (float) Order::where('company_id', $companyId)->where('created_at', '>=', $startDate)->sum('total_amount');
+        $totalSales = $posSalesSum + $orderSalesSum;
+
+        $purchases = Purchase::with('payments')->where('company_id', $companyId)->where('created_at', '>=', $startDate)->get();
         $purchaseDue = (float) $purchases->sum(function ($p) {
             return max(0, $p->total_amount - $p->payments->sum('amount'));
         });
 
-        $sales = Sale::with('payments')->where('created_at', '>=', $startDate)->get();
-        $salesDue = (float) $sales->sum(function ($s) {
+        $sales = Sale::with('payments')->where('company_id', $companyId)->where('created_at', '>=', $startDate)->get();
+        $posSalesDue = (float) $sales->sum(function ($s) {
             return max(0, $s->total_amount - $s->payments->sum('amount'));
         });
 
-        $lowStockProducts = Product::with('category')
+        $orders = Order::with('payments')->where('company_id', $companyId)->where('created_at', '>=', $startDate)->get();
+        $orderSalesDue = (float) $orders->sum(function ($o) {
+            return max(0, $o->total_amount - $o->payments->sum('amount'));
+        });
+
+        $salesDue = $posSalesDue + $orderSalesDue;
+
+        $lowStockProducts = Product::where('company_id', $companyId)
+            ->with('category')
             ->where('stock_quantity', '<=', 5)
             ->orderBy('stock_quantity', 'asc')
             ->take(10)
@@ -48,8 +62,11 @@ class ReportController extends Controller
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
 
-            $mSales = (float) Sale::whereBetween('created_at', [$monthStart, $monthEnd])->sum('total_amount');
-            $mPurchases = (float) Purchase::whereBetween('created_at', [$monthStart, $monthEnd])->sum('total_amount');
+            $mPosSales = (float) Sale::where('company_id', $companyId)->whereBetween('created_at', [$monthStart, $monthEnd])->sum('total_amount');
+            $mOrders = (float) Order::where('company_id', $companyId)->whereBetween('created_at', [$monthStart, $monthEnd])->sum('total_amount');
+            $mSales = $mPosSales + $mOrders;
+
+            $mPurchases = (float) Purchase::where('company_id', $companyId)->whereBetween('created_at', [$monthStart, $monthEnd])->sum('total_amount');
 
             $chartMonths[] = [
                 'label' => $month->format('M'),
@@ -81,35 +98,53 @@ class ReportController extends Controller
             default => Carbon::now()->subDays(30),
         };
 
-        $totalPurchases = (float) Purchase::where('created_at', '>=', $startDate)->sum('total_amount');
-        $totalSales = (float) Sale::where('created_at', '>=', $startDate)->sum('total_amount');
+        $companyId = auth()->user() ? auth()->user()->company_id : 1;
+        $company = auth()->user() ? auth()->user()->company : \App\Models\Company::find(1);
+
+        $currencyRaw = $company ? $company->currency : '$';
+        $currency = preg_match('/\((.*?)\)/', $currencyRaw, $m) ? $m[1] : $currencyRaw;
+        $currency = str_replace('৳', 'Tk.', $currency);
+
+        $totalPurchases = (float) Purchase::where('company_id', $companyId)->where('created_at', '>=', $startDate)->sum('total_amount');
         
-        $purchases = Purchase::with(['payments', 'supplier'])->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
+        $posSalesSum = (float) Sale::where('company_id', $companyId)->where('created_at', '>=', $startDate)->sum('total_amount');
+        $orderSalesSum = (float) Order::where('company_id', $companyId)->where('created_at', '>=', $startDate)->sum('total_amount');
+        $totalSales = $posSalesSum + $orderSalesSum;
+
+        $purchases = Purchase::with(['payments', 'supplier'])->where('company_id', $companyId)->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
         $purchaseDue = (float) $purchases->sum(function ($p) {
             return max(0, $p->total_amount - $p->payments->sum('amount'));
         });
 
-        $sales = Sale::with(['payments', 'customer'])->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
-        $salesDue = (float) $sales->sum(function ($s) {
+        $sales = Sale::with(['payments', 'customer'])->where('company_id', $companyId)->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
+        $posSalesDue = (float) $sales->sum(function ($s) {
             return max(0, $s->total_amount - $s->payments->sum('amount'));
         });
 
-        $lowStockProducts = Product::with('category')
+        $orders = Order::with(['payments', 'customer'])->where('company_id', $companyId)->where('created_at', '>=', $startDate)->orderBy('created_at', 'desc')->get();
+        $orderSalesDue = (float) $orders->sum(function ($o) {
+            return max(0, $o->total_amount - $o->payments->sum('amount'));
+        });
+
+        $salesDue = $posSalesDue + $orderSalesDue;
+
+        $lowStockProducts = Product::where('company_id', $companyId)
+            ->with('category')
             ->where('stock_quantity', '<=', 5)
             ->orderBy('stock_quantity', 'asc')
             ->take(20)
             ->get();
 
-        $company = auth()->user()->company;
-
         $pdf = Pdf::loadView('reports.pdf', [
             'company' => $company,
+            'currency' => $currency,
             'range' => $range,
             'totalPurchases' => $totalPurchases,
             'totalSales' => $totalSales,
             'purchaseDue' => $purchaseDue,
             'salesDue' => $salesDue,
             'sales' => $sales,
+            'orders' => $orders,
             'purchases' => $purchases,
             'lowStockProducts' => $lowStockProducts,
             'generatedAt' => Carbon::now()->format('d/m/Y, h:i A')
