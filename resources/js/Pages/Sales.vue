@@ -219,6 +219,7 @@ const { currencySymbol } = useCurrency();
 
 const props = defineProps({
     sales: Object,
+    totalSalesRecord: Number,
     customers: Array,
     products: Array,
 });
@@ -280,6 +281,9 @@ const grandTotal = computed(() => {
 });
 
 const totalSalesAmount = computed(() => {
+    if (props.totalSalesRecord !== undefined && props.totalSalesRecord !== null) {
+        return props.totalSalesRecord;
+    }
     if(!props.sales || !props.sales.data) return 0;
     return props.sales.data.reduce((total, sale) => total + parseFloat(sale.total_amount || 0), 0);
 });

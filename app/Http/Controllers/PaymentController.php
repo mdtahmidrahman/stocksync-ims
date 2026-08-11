@@ -28,8 +28,16 @@ class PaymentController extends Controller
 
         $payments = $query->latest()->paginate(50)->withQueryString();
 
+        $totalIncoming = (float) Payment::whereIn('payable_type', [Sale::class, Order::class])->sum('amount');
+        $totalOutgoing = (float) Payment::where('payable_type', Purchase::class)->sum('amount');
+
         return Inertia::render('Payments', [
             'payments' => $payments,
+            'metrics' => [
+                'total_incoming' => $totalIncoming,
+                'total_outgoing' => $totalOutgoing,
+                'net_cashflow' => $totalIncoming - $totalOutgoing,
+            ],
             'filters' => $request->only(['type']),
         ]);
     }

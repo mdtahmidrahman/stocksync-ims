@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Requests\StorePurchaseRequest;
 use Illuminate\Support\Facades\DB;
+use App\Models\Payment;
 
 class PurchaseController extends Controller
 {
@@ -16,12 +17,14 @@ class PurchaseController extends Controller
     {
         $query = Purchase::with(['supplier', 'user', 'items.product'])->latest();
         
+        $totalPurchasesRecord = (float) Purchase::sum('total_amount');
         $purchases = $query->paginate(20);
         $suppliers = Supplier::all();
         $products = Product::all();
 
         return Inertia::render('Purchases', [
             'purchases' => $purchases,
+            'totalPurchasesRecord' => $totalPurchasesRecord,
             'suppliers' => $suppliers,
             'products' => $products
         ]);
@@ -65,6 +68,17 @@ class PurchaseController extends Controller
                     $product->save();
                 }
             }
+
+            // Create Payment record for the purchase
+            Payment::create([
+                'company_id' => $purchase->company_id ?? auth()->user()->company_id,
+                'payable_type' => Purchase::class,
+                'payable_id' => $purchase->id,
+                'amount' => $totalAmount,
+                'payment_method' => 'cash',
+                'payment_date' => now(),
+                'reference_number' => 'PAY-' . strtoupper(\Illuminate\Support\Str::random(6)),
+            ]);
 
             DB::commit();
 

@@ -5,6 +5,22 @@
       <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Payments & Billing</h1>
     </div>
 
+    <!-- Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 min-w-0">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Incoming (Sales)">Total Incoming (Sales)</div>
+        <AutoFitText :value="`${currencySymbol}${(metrics?.total_incoming || 0).toFixed(2)}`" custom-class="text-emerald-600 dark:text-emerald-400 mt-1" />
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 min-w-0">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Outgoing (Purchases)">Total Outgoing (Purchases)</div>
+        <AutoFitText :value="`${currencySymbol}${(metrics?.total_outgoing || 0).toFixed(2)}`" custom-class="text-rose-600 dark:text-rose-400 mt-1" />
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 min-w-0">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Net Cashflow">Net Cashflow</div>
+        <AutoFitText :value="`${currencySymbol}${(metrics?.net_cashflow || 0).toFixed(2)}`" :custom-class="metrics?.net_cashflow >= 0 ? 'text-emerald-600 dark:text-emerald-400 mt-1' : 'text-rose-600 dark:text-rose-400 mt-1'" />
+      </div>
+    </div>
+
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
       <!-- Toolbar -->
       <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
@@ -53,11 +69,11 @@
               <td class="p-4 text-gray-900 dark:text-white text-sm whitespace-nowrap capitalize">
                 {{ pay.payment_method || 'Cash' }}
               </td>
-              <td :class="['p-4 font-medium whitespace-nowrap', isIncoming(pay) ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
+              <td :class="['p-4 font-medium whitespace-nowrap', isIncoming(pay) ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400']">
                 {{ isIncoming(pay) ? '+' : '-' }}{{ currencySymbol }}{{ Number(pay.amount || 0).toFixed(2) }}
               </td>
               <td class="p-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300">
                   Completed
                 </span>
               </td>
@@ -73,6 +89,7 @@
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
 import Dropdown from '../Components/Dropdown.vue';
+import AutoFitText from '../Components/AutoFitText.vue';
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useCurrency } from '../Composables/useCurrency';
@@ -80,6 +97,7 @@ import { formatDate } from '../Composables/useDate';
 
 const props = defineProps({
   payments: Object,
+  metrics: Object,
   filters: Object,
 });
 

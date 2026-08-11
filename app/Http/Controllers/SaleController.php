@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use App\Http\Requests\StoreSaleRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\Company;
+use App\Models\Payment;
 
 class SaleController extends Controller
 {
@@ -18,12 +19,14 @@ class SaleController extends Controller
     {
         $query = Sale::with(['customer', 'user', 'items.product'])->latest();
         
+        $totalSalesRecord = (float) Sale::sum('total_amount');
         $sales = $query->paginate(20);
         $customers = Customer::all();
         $products = Product::all();
 
         return Inertia::render('Sales', [
             'sales' => $sales,
+            'totalSalesRecord' => $totalSalesRecord,
             'customers' => $customers,
             'products' => $products
         ]);
@@ -80,6 +83,17 @@ class SaleController extends Controller
                     $customer->save();
                 }
             }
+
+            // Create Payment record for the sale
+            Payment::create([
+                'company_id' => $sale->company_id ?? auth()->user()->company_id,
+                'payable_type' => Sale::class,
+                'payable_id' => $sale->id,
+                'amount' => $totalAmount,
+                'payment_method' => $data['payment_method'] ?? 'cash',
+                'payment_date' => now(),
+                'reference_number' => 'PAY-' . strtoupper(\Illuminate\Support\Str::random(6)),
+            ]);
 
             DB::commit();
 
