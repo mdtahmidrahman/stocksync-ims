@@ -16,8 +16,6 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade')->after('id');
         });
 
-        // Modify ENUM using raw SQL as Laravel schema builder doesn't easily alter ENUMs
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'manager', 'staff') NOT NULL DEFAULT 'staff'");
     }
 
     /**
@@ -25,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'manager', 'staff') NOT NULL DEFAULT 'staff'");
-        
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['company_id']);
             $table->dropColumn('company_id');
