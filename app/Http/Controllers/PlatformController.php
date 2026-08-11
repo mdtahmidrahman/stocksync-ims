@@ -26,6 +26,7 @@ class PlatformController extends Controller
         $totalCompanies = Company::count();
         $totalUsers = User::count();
         $totalProducts = Product::withoutGlobalScopes()->count();
+        $openTickets = \App\Models\SupportTicket::withoutGlobalScopes()->where('status', 'open')->count();
         
         $recentCompanies = Company::latest()->take(5)->get();
 
@@ -34,6 +35,7 @@ class PlatformController extends Controller
                 'total_companies' => $totalCompanies,
                 'total_users' => $totalUsers,
                 'total_products' => $totalProducts,
+                'open_tickets' => $openTickets,
             ],
             'recent_companies' => $recentCompanies
         ]);

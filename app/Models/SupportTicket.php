@@ -14,6 +14,7 @@ class SupportTicket extends Model
         'user_id',
         'subject',
         'category',
+        'priority',
         'message',
         'status',
     ];
@@ -21,5 +22,10 @@ class SupportTicket extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(SupportTicketReply::class, 'support_ticket_id')->with('user');
     }
 }
