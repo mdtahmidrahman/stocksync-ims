@@ -35,5 +35,9 @@
 </template>
 
 <script setup>
-// No complex logic needed for 404 page
+import { Link } from '@inertiajs/vue3';
+import { useAppState } from '../Composables/useAppState';
+
+// Initialize app state so theme preferences (dark mode) apply
+const { isDark } = useAppState();
 </script>
