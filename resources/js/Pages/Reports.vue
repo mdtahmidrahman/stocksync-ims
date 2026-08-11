@@ -25,43 +25,43 @@
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
       <!-- Card 1 -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors min-w-0">
         <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center shrink-0">
           <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
-        <div>
-          <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Purchase</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}{{ formatNumber(metrics.totalPurchases) }}</div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Purchase">Total Purchase</div>
+          <AutoFitText :value="`${currencySymbol}${formatNumber(metrics.totalPurchases)}`" default-class="text-xl sm:text-2xl font-bold" custom-class="text-gray-900 dark:text-white" />
         </div>
       </div>
       <!-- Card 2 -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors min-w-0">
         <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center shrink-0">
           <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
         </div>
-        <div>
-          <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}{{ formatNumber(metrics.totalSales) }}</div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Sales">Total Sales</div>
+          <AutoFitText :value="`${currencySymbol}${formatNumber(metrics.totalSales)}`" default-class="text-xl sm:text-2xl font-bold" custom-class="text-gray-900 dark:text-white" />
         </div>
       </div>
       <!-- Card 3 -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors min-w-0">
         <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
           <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
         </div>
-        <div>
-          <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Purchase Due</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}{{ formatNumber(metrics.purchaseDue) }}</div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Purchase Due">Purchase Due</div>
+          <AutoFitText :value="`${currencySymbol}${formatNumber(metrics.purchaseDue)}`" default-class="text-xl sm:text-2xl font-bold" custom-class="text-gray-900 dark:text-white" />
         </div>
       </div>
       <!-- Card 4 -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center gap-4 transition-colors min-w-0">
         <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/50 flex items-center justify-center shrink-0">
           <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
         </div>
-        <div>
-          <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Sales Due</div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ currencySymbol }}{{ formatNumber(metrics.salesDue) }}</div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Sales Due">Sales Due</div>
+          <AutoFitText :value="`${currencySymbol}${formatNumber(metrics.salesDue)}`" default-class="text-xl sm:text-2xl font-bold" custom-class="text-gray-900 dark:text-white" />
         </div>
       </div>
     </div>
@@ -131,6 +131,7 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
+import AutoFitText from '../Components/AutoFitText.vue';
 import Dropdown from '../Components/Dropdown.vue';
 import { useCurrency } from '../Composables/useCurrency';
 import { ref } from 'vue';

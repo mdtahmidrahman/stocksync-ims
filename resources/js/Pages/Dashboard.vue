@@ -25,65 +25,77 @@
       
       <!-- Actionable KPI Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between min-w-0">
           <div class="flex items-start justify-between mb-2">
-            <div class="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400">
+            <div class="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <span class="text-xs font-semibold text-green-600 bg-green-50 dark:bg-green-950/30 dark:text-green-400 px-2 py-0.5 rounded-md flex items-center gap-1">
+            <span class="text-xs font-semibold text-green-600 bg-green-50 dark:bg-green-950/30 dark:text-green-400 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
               12.4%
             </span>
           </div>
-          <div>
-            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">Monthly Sales</div>
-            <div class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ currencySymbol }}45,231.89</div>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate" title="Total Inventory Value">Total Inventory Value</div>
+            <AutoFitText 
+              :value="`${currencySymbol}${Number(kpis.totalInventoryValue).toLocaleString('en-US', {minimumFractionDigits: 2})}`"
+              custom-class="text-gray-900 dark:text-white mt-1"
+            />
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between min-w-0">
           <div class="flex items-start justify-between mb-2">
-            <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
             </div>
-            <span class="text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 rounded-md flex items-center gap-1">
+            <span class="text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
               3.2%
             </span>
           </div>
-          <div>
-            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">Products Stocked</div>
-            <div class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">1,245</div>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate" title="Low Stock Alerts">Low Stock Alerts</div>
+            <AutoFitText 
+              :value="kpis.lowStockCount"
+              custom-class="text-gray-900 dark:text-white mt-1"
+            />
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between min-w-0">
           <div class="flex items-start justify-between mb-2">
-            <div class="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+            <div class="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400 shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
-            <span class="text-xs font-semibold text-yellow-700 bg-yellow-100/50 dark:bg-yellow-950/30 dark:text-yellow-400 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+            <span class="text-xs font-semibold text-yellow-700 bg-yellow-100/50 dark:bg-yellow-950/30 dark:text-yellow-400 px-2.5 py-0.5 rounded-md flex items-center gap-1 shrink-0">
               Active Warnings
             </span>
           </div>
-          <div>
-            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">Low Stock SKUs</div>
-            <div class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">18</div>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate" title="Today's Sales">Today's Sales</div>
+            <AutoFitText 
+              :value="`${currencySymbol}${Number(kpis.todaySales).toLocaleString('en-US', {minimumFractionDigits: 2})}`"
+              custom-class="text-gray-900 dark:text-white mt-1"
+            />
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between min-w-0">
           <div class="flex items-start justify-between mb-2">
-            <div class="w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+            <div class="w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
             </div>
-            <span class="text-xs font-semibold text-green-600 bg-green-50 dark:bg-green-950/30 dark:text-green-400 px-2 py-0.5 rounded-md flex items-center gap-1">
+            <span class="text-xs font-semibold text-green-600 bg-green-50 dark:bg-green-950/30 dark:text-green-400 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">
               99.98% SLA
             </span>
           </div>
-          <div>
-            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">Fulfillment Rate</div>
-            <div class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">98.2%</div>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate" title="Pending Deliveries (POs)">Pending Deliveries (POs)</div>
+            <AutoFitText 
+              :value="kpis.pendingDeliveries"
+              custom-class="text-gray-900 dark:text-white mt-1"
+            />
           </div>
         </div>
       </div>
@@ -142,11 +154,17 @@
           </div>
           
           <div class="relative flex items-center justify-center py-6">
-            <!-- Simulated Donut Chart using Tailwind ring utilities -->
-            <div class="w-32 h-32 rounded-full border-8 border-primary-100 dark:border-primary-950 flex items-center justify-center relative">
-              <div class="absolute inset-0 w-full h-full rounded-full border-8 border-transparent border-t-primary-600 border-r-primary-500 transform -rotate-45"></div>
-              <div class="text-center">
-                <span class="text-2xl font-bold text-gray-900 dark:text-white">82%</span>
+            <!-- Dynamic SVG Donut Chart -->
+            <div class="relative w-32 h-32">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="10" fill="none" class="text-primary-50 dark:text-gray-800" />
+                <circle cx="50" cy="50" r="40" stroke="#4F46E5" stroke-width="10" fill="none" 
+                        :stroke-dasharray="251.3" 
+                        :stroke-dashoffset="251.3 - (251.3 * stockStatus.percentage) / 100" 
+                        stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ stockStatus.percentage }}%</span>
                 <span class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Healthy</span>
               </div>
             </div>
@@ -157,19 +175,19 @@
               <span class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <span class="w-2.5 h-2.5 rounded-full bg-primary-600"></span> Healthy (In Stock)
               </span>
-              <span class="font-bold text-gray-900 dark:text-white">1,021</span>
+              <span class="font-bold text-gray-900 dark:text-white">{{ stockStatus.healthy }}</span>
             </div>
             <div class="flex justify-between items-center text-sm">
               <span class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Low Stock Alert
               </span>
-              <span class="font-bold text-gray-900 dark:text-white">188</span>
+              <span class="font-bold text-gray-900 dark:text-white">{{ stockStatus.low }}</span>
             </div>
             <div class="flex justify-between items-center text-sm">
               <span class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Out of Stock
               </span>
-              <span class="font-bold text-gray-900 dark:text-white">36</span>
+              <span class="font-bold text-gray-900 dark:text-white">{{ stockStatus.out }}</span>
             </div>
           </div>
         </div>
@@ -195,31 +213,33 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                <tr v-for="i in 4" :key="i" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                <tr v-for="item in topProducts" :key="item.product_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                   <td class="p-4">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0 text-gray-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                       </div>
                       <div>
-                        <div class="font-semibold text-gray-900 dark:text-white">Wireless Headphones Pro {{ i }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">TECH-{{ 100 + i }}</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">{{ item.product?.name || 'Unknown' }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.product?.sku || 'N/A' }}</div>
                       </div>
                     </div>
                   </td>
-                  <td class="p-4 text-right font-medium text-gray-900 dark:text-white">{{ 245 - (i * 20) }}</td>
+                  <td class="p-4 text-right font-medium text-gray-900 dark:text-white">{{ item.total_sold }}</td>
                   <td class="p-4">
                     <div class="flex items-end justify-center gap-1 h-8">
-                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${20 + i * 5}%` }"></div>
-                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${40 - i * 5}%` }"></div>
-                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${30 + i * 10}%` }"></div>
-                      <div class="w-1.5 bg-primary-300 dark:bg-primary-800/50 rounded-t-sm" :style="{ height: `${60 - i * 5}%` }"></div>
-                      <div class="w-1.5 bg-primary-400 dark:bg-primary-700/50 rounded-t-sm" :style="{ height: `${50 + i * 5}%` }"></div>
-                      <div class="w-1.5 bg-primary-500 dark:bg-primary-600/50 rounded-t-sm" :style="{ height: `${80 - i * 10}%` }"></div>
-                      <div class="w-1.5 bg-primary-600 dark:bg-primary-500 rounded-t-sm" :style="{ height: `${100 - i * 5}%` }"></div>
+                      <!-- Dummy sparkline for visual effect -->
+                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${20 + Math.random() * 50}%` }"></div>
+                      <div class="w-1.5 bg-primary-200 dark:bg-primary-900/50 rounded-t-sm" :style="{ height: `${40 - Math.random() * 20}%` }"></div>
+                      <div class="w-1.5 bg-primary-300 dark:bg-primary-800/50 rounded-t-sm" :style="{ height: `${60 - Math.random() * 20}%` }"></div>
+                      <div class="w-1.5 bg-primary-400 dark:bg-primary-700/50 rounded-t-sm" :style="{ height: `${50 + Math.random() * 30}%` }"></div>
+                      <div class="w-1.5 bg-primary-600 dark:bg-primary-500 rounded-t-sm" :style="{ height: `${100 - Math.random() * 20}%` }"></div>
                     </div>
                   </td>
-                  <td class="p-4 text-right font-medium text-green-600 dark:text-green-400">${{ (245 - (i * 20)) * 120 }}.00</td>
+                  <td class="p-4 text-right font-medium text-green-600 dark:text-green-400">{{ currencySymbol }}{{ Number(item.total_revenue).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+                </tr>
+                <tr v-if="topProducts.length === 0">
+                    <td colspan="4" class="p-4 text-center text-gray-500 dark:text-gray-400">No sales data available.</td>
                 </tr>
               </tbody>
             </table>
@@ -244,29 +264,22 @@
           </div>
           
           <div class="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-6">
-            <div class="relative pl-6">
-              <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-green-500 ring-4 ring-white dark:ring-gray-900"></div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">New POS Sale Completed</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Invoice INV-2024-1005 for $350.00</p>
-              <span class="text-xs font-medium text-gray-400 mt-1 inline-block">10 mins ago</span>
+            <div v-for="(activity, index) in recentActivity" :key="index" class="relative pl-6">
+              <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-white dark:ring-gray-900" :class="activity.type === 'sale' ? 'bg-green-500' : 'bg-blue-500'"></div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ activity.title }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ activity.description }}</p>
+              <span class="text-xs font-medium text-gray-400 mt-1 inline-block">{{ activity.time }}</span>
             </div>
-            <div class="relative pl-6">
-              <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 ring-4 ring-white dark:ring-gray-900"></div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">Purchase Order Created</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PO-1025 created for Demo Company 1</p>
-              <span class="text-xs font-medium text-gray-400 mt-1 inline-block">10 hour ago</span>
-            </div>
-            <div class="relative pl-6">
-              <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary-500 ring-4 ring-white dark:ring-gray-900"></div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">Stock Adjustment</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">50 units added to TECH-102</p>
-              <span class="text-xs font-medium text-gray-400 mt-1 inline-block">2 hours ago</span>
-            </div>
-            <div class="relative pl-6">
+            
+            <div v-for="(alert, index) in attentionFeed" :key="'alert-'+index" class="relative pl-6">
               <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-yellow-500 ring-4 ring-white dark:ring-gray-900"></div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">Low Stock Warning Triggered</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">TECH-205 dropped below minimum threshold (10 units)</p>
-              <span class="text-xs font-medium text-gray-400 mt-1 inline-block">Yesterday</span>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">Attention Required</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><Link :href="`/purchases`" class="hover:underline">{{ alert.message }}</Link></p>
+              <span class="text-xs font-medium text-gray-400 mt-1 inline-block">Triggered</span>
+            </div>
+
+            <div v-if="!recentActivity.length && !attentionFeed.length" class="text-sm text-gray-500">
+                No recent activity.
             </div>
           </div>
         </div>
@@ -278,7 +291,9 @@
 
 <script setup>
 import { ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
+import AutoFitText from '../Components/AutoFitText.vue';
 import { useCurrency } from '../Composables/useCurrency';
 
 const { currencySymbol } = useCurrency();
@@ -286,25 +301,16 @@ import { useAppState } from '../Composables/useAppState';
 
 const { currentUser } = useAppState();
 
-const weeklySalesRestock = [
-  { label: 'Mon', itemsSold: 84, itemsRestocked: 34 },
-  { label: 'Tue', itemsSold: 112, itemsRestocked: 46 },
-  { label: 'Wed', itemsSold: 76, itemsRestocked: 28 },
-  { label: 'Thu', itemsSold: 138, itemsRestocked: 62 },
-  { label: 'Fri', itemsSold: 156, itemsRestocked: 74 },
-  { label: 'Sat', itemsSold: 121, itemsRestocked: 51 },
-  { label: 'Sun', itemsSold: 98, itemsRestocked: 39 },
-];
+const props = defineProps({
+  kpis: Object,
+  stockStatus: Object,
+  weeklySalesRestock: Array,
+  topProducts: Array,
+  attentionFeed: Array,
+  recentActivity: Array
+});
 
-const maxChartValue = Math.max(
-  ...weeklySalesRestock.flatMap((day) => [day.itemsSold, day.itemsRestocked])
-);
-
-const maxBarHeight = 208;
-
-const salesRestockChart = weeklySalesRestock.map((day) => ({
-  ...day,
-  soldHeight: Math.round((day.itemsSold / maxChartValue) * maxBarHeight),
-  restockedHeight: Math.round((day.itemsRestocked / maxChartValue) * maxBarHeight),
-}));
+// Since the data is pre-calculated in the controller, we can just use the prop directly
+// Though `salesRestockChart` expects specific formatting which the controller matches.
+const salesRestockChart = props.weeklySalesRestock;
 </script>

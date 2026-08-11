@@ -11,17 +11,17 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales Record</div>
-        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ currencySymbol }}{{ totalSalesAmount.toFixed(2) }}</div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 min-w-0">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Sales Record">Total Sales Record</div>
+        <AutoFitText :value="`${currencySymbol}${totalSalesAmount.toFixed(2)}`" custom-class="text-gray-900 dark:text-white mt-1" />
       </div>
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Invoices</div>
-        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ sales.total }}</div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 min-w-0">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Invoices">Total Invoices</div>
+        <AutoFitText :value="sales.total" custom-class="text-gray-900 dark:text-white mt-1" />
       </div>
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Recent Customers</div>
-        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ customers.length }}</div>
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 min-w-0">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Recent Customers">Recent Customers</div>
+        <AutoFitText :value="customers.length" custom-class="text-gray-900 dark:text-white mt-1" />
       </div>
     </div>
 
@@ -211,6 +211,7 @@ import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
 import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
+import AutoFitText from '../Components/AutoFitText.vue';
 import { useCurrency } from '../Composables/useCurrency';
 import { formatDateTime } from '../Composables/useDate';
 
