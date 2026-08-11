@@ -8,22 +8,40 @@ use Inertia\Inertia;
 use App\Http\Requests\StoreWarehouseRequest;
 use App\Http\Requests\UpdateWarehouseRequest;
 use App\Http\Requests\BulkImportRequest;
+use App\Models\User;
+use App\Models\Product;
+use App\Models\WarehouseTransfer;
 
 class WarehouseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Warehouse::query();
+        $query = Warehouse::with(['manager', 'products']);
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('location', 'like', '%' . $request->search . '%');
         }
 
-        $warehouses = $query->latest()->paginate(10)->withQueryString();
+        // Get all warehouses (no pagination to support scrolling)
+        $warehouses = $query->latest()->get()->map(function ($warehouse) {
+            $totalItems = $warehouse->products->sum('pivot.quantity');
+            $capacityUsed = $warehouse->capacity > 0 ? round(($totalItems / $warehouse->capacity) * 100) : 0;
+            return array_merge($warehouse->toArray(), [
+                'total_items' => $totalItems,
+                'capacity_used' => min($capacityUsed, 100)
+            ]);
+        });
+        
+        $users = User::all();
+        $products = Product::all();
+        $transfers = WarehouseTransfer::with(['sourceWarehouse', 'destinationWarehouse', 'product', 'user'])->latest()->get();
 
         return Inertia::render('Warehouses', [
             'warehouses' => $warehouses,
+            'users' => $users,
+            'products' => $products,
+            'transfers' => $transfers,
             'filters' => $request->only(['search'])
         ]);
     }
@@ -115,5 +133,56 @@ class WarehouseController extends Controller
         fclose($fileHandle);
 
         return redirect()->back()->with('success', 'Warehouses imported successfully.');
+    }
+
+    public function storeTransfer(Request $request)
+    {
+        $data = $request->validate([
+            'source_warehouse_id' => 'required|exists:warehouses,id',
+            'destination_warehouse_id' => 'required|exists:warehouses,id|different:source_warehouse_id',
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string'
+        ]);
+
+        $data['user_id'] = auth()->id() ?? 1;
+        $data['status'] = 'requested';
+
+        WarehouseTransfer::create($data);
+
+        return redirect()->back()->with('success', 'Transfer requested successfully.');
+    }
+
+    public function updateTransferStatus(Request $request, WarehouseTransfer $transfer)
+    {
+        $data = $request->validate([
+            'status' => 'required|in:requested,in_transit,received'
+        ]);
+
+        if ($data['status'] === 'received' && $transfer->status !== 'received') {
+            // Deduct from source
+            $sourceProduct = $transfer->sourceWarehouse->products()->where('product_id', $transfer->product_id)->first();
+            if ($sourceProduct) {
+                $transfer->sourceWarehouse->products()->updateExistingPivot($transfer->product_id, [
+                    'quantity' => max(0, $sourceProduct->pivot->quantity - $transfer->quantity)
+                ]);
+            } else {
+                // If it doesn't exist, we just let it be or create it with 0
+            }
+
+            // Add to destination
+            $destProduct = $transfer->destinationWarehouse->products()->where('product_id', $transfer->product_id)->first();
+            if ($destProduct) {
+                $transfer->destinationWarehouse->products()->updateExistingPivot($transfer->product_id, [
+                    'quantity' => $destProduct->pivot->quantity + $transfer->quantity
+                ]);
+            } else {
+                $transfer->destinationWarehouse->products()->attach($transfer->product_id, ['quantity' => $transfer->quantity]);
+            }
+        }
+
+        $transfer->update(['status' => $data['status']]);
+
+        return redirect()->back()->with('success', 'Transfer status updated.');
     }
 }

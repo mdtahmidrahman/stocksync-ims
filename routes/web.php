@@ -18,6 +18,8 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,9 +43,15 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Page Routes
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->middleware('role:admin|manager|staff')->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('role:admin|manager|staff')
+        ->name('dashboard');
+
+    // Notifications API (Used by slide-over panel)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
     Route::get('/platform', [PlatformController::class, 'dashboardMetrics'])->middleware('role:super_admin');
 
@@ -63,13 +71,15 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->middleware('role:admin|manager');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->middleware('role:admin|manager');
 
-    // Warehouses (Web / Inertia)
-    Route::get('/warehouses/export', [WarehouseController::class, 'export'])->middleware('role:admin|manager');
-    Route::post('/warehouses/import', [WarehouseController::class, 'import'])->middleware('role:admin|manager');
-    Route::get('/warehouses', [WarehouseController::class, 'index'])->middleware('role:admin|manager');
-    Route::post('/warehouses', [WarehouseController::class, 'store'])->middleware('role:admin|manager');
-    Route::put('/warehouses/{warehouse}', [WarehouseController::class, 'update'])->middleware('role:admin|manager');
-    Route::delete('/warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->middleware('role:admin|manager');
+    // Warehouses & Logistics
+    Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
+    Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
+    Route::put('/warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('warehouses.update');
+    Route::delete('/warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('warehouses.destroy');
+    Route::get('/warehouses/export', [WarehouseController::class, 'export'])->name('warehouses.export');
+    Route::post('/warehouses/import', [WarehouseController::class, 'import'])->name('warehouses.import');
+    Route::post('/warehouses/transfers', [WarehouseController::class, 'storeTransfer'])->name('warehouses.transfers.store');
+    Route::put('/warehouses/transfers/{transfer}/status', [WarehouseController::class, 'updateTransferStatus'])->name('warehouses.transfers.updateStatus');
 
     // Suppliers
     Route::get('/suppliers/export', [SupplierController::class, 'export'])->middleware('role:admin|manager');
