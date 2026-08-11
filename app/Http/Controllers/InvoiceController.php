@@ -50,4 +50,25 @@ class InvoiceController extends Controller
 
         return $pdf->download('Invoice_' . $order->order_number . '.pdf');
     }
+
+    public function purchaseInvoice(\App\Models\Purchase $purchase)
+    {
+        $purchase->load(['supplier', 'items.product']);
+        $company = auth()->user() ? auth()->user()->company : Company::first();
+        $currencyRaw = $company ? $company->currency : '$';
+        $currency = preg_match('/\((.*?)\)/', $currencyRaw, $m) ? $m[1] : $currencyRaw;
+        $currency = str_replace('৳', 'Tk.', $currency);
+
+        $pdf = Pdf::loadView('invoices.template', [
+            'type' => 'Purchase Order',
+            'record' => $purchase,
+            'company' => $company,
+            'currency' => $currency,
+            'cashier' => auth()->user() ? auth()->user()->name : 'Staff',
+            'number' => $purchase->reference_number,
+            'date' => $purchase->created_at->format('M d, Y'),
+        ]);
+
+        return $pdf->download('Purchase_Order_' . $purchase->reference_number . '.pdf');
+    }
 }

@@ -96,7 +96,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/invoices/sale/{sale}', [InvoiceController::class, 'saleInvoice'])->name('invoice.sale');
     Route::get('/invoices/order/{order}', [InvoiceController::class, 'orderInvoice'])->name('invoice.order');
-    
+    Route::get('/invoices/purchase/{purchase}', [InvoiceController::class, 'purchaseInvoice'])->name('invoice.purchase');
+
     Route::get('/inventory', [InventoryController::class, 'index'])->middleware('role:admin|manager|staff');
     Route::post('/inventory/adjust', [InventoryController::class, 'adjust'])->middleware('role:admin|manager');
     Route::get('/inventory/history/{product}', [InventoryController::class, 'history'])->middleware('role:admin|manager|staff');

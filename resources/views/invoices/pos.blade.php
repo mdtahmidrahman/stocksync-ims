@@ -12,16 +12,18 @@
             padding: 0;
             text-align: left;
             width: 100%;
+            line-height: 1.6;
         }
         
         .receipt-container {
             width: 100%;
             margin: 0 auto;
-            padding: 5px;
+            padding: 6px;
         }
 
         .center {
             text-align: center;
+            line-height: 1.6;
         }
 
         .bold {
@@ -31,18 +33,18 @@
         .logo {
             max-width: 60px;
             max-height: 40px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
-            margin-bottom: 5px;
+            margin-top: 8px;
+            margin-bottom: 8px;
         }
 
         th, td {
-            padding: 3px 0;
+            padding: 5px 0;
             vertical-align: top;
         }
 
@@ -50,6 +52,7 @@
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
             text-align: left;
+            padding: 6px 0;
         }
 
         .text-right {
@@ -62,16 +65,16 @@
 
         .item-name {
             display: block;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
         .totals-table {
             border-top: 1px dashed #000;
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
         .totals-table td {
-            padding: 2px 0;
+            padding: 4px 0;
         }
         
         .grand-total {
@@ -79,25 +82,28 @@
             font-weight: bold;
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 5px 0 !important;
+            padding: 7px 0 !important;
         }
 
         .footer {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 18px;
             font-size: 10px;
+            line-height: 1.7;
         }
         
         .divider {
             border-top: 1px dashed #000;
-            margin: 5px 0;
+            margin: 8px 0;
         }
     </style>
 </head>
 <body>
     <div class="receipt-container">
         <div class="center">
-            @if(file_exists(public_path('images/logo-bg-transparent.png')))
+            @if($company && $company->logo_path && file_exists(storage_path('app/public/' . $company->logo_path)))
+                <img src="{{ storage_path('app/public/' . $company->logo_path) }}" class="logo" alt="Logo"><br>
+            @elseif(file_exists(public_path('images/logo-bg-transparent.png')))
                 <img src="{{ public_path('images/logo-bg-transparent.png') }}" class="logo" alt="Logo"><br>
             @endif
             <strong style="font-size: 14px;">{{ $company ? $company->name : 'StockSync IMS' }}</strong><br>
@@ -164,10 +170,17 @@
         </table>
         
         <div class="footer">
-            Thank you for shopping with us!<br>
-            Please visit again.
-            <div style="margin-top: 10px;">
+            {{ $company && $company->pos_receipt_footer ? $company->pos_receipt_footer : 'Thank you for shopping with us! Please visit again.' }}
+            <div style="margin-top: 8px; font-weight: bold;">
                 *** CUSTOMER COPY ***
+            </div>
+            <div style="margin-top: 10px; font-size: 7px; color: #333; border-top: 1px dotted #888; padding-top: 5px; text-align: center; white-space: nowrap;">
+                System Provided & Powered by 
+                @if(file_exists(public_path('images/logo-bg-transparent.png')))
+                    <img src="{{ public_path('images/logo-bg-transparent.png') }}" style="max-height: 9px; vertical-align: middle; margin: 0 1px;" alt="StockSync">
+                @endif
+                <strong>StockSync IMS</strong><br>
+                <span style="font-size: 6.5px;">www.stocksync.com • support@stocksync.com</span>
             </div>
         </div>
     </div>

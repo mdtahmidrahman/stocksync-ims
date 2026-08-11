@@ -92,7 +92,11 @@
                         <tr>
                             <td class="title">
                                 <div style="display: inline-block; vertical-align: middle;">
-                                    <img src="{{ public_path('images/logo-bg-transparent.png') }}" style="max-height: 40px; display: inline-block; vertical-align: middle; margin-right: 10px;" alt="StockSync Logo">
+                                    @if($company && $company->logo_path && file_exists(storage_path('app/public/' . $company->logo_path)))
+                                        <img src="{{ storage_path('app/public/' . $company->logo_path) }}" style="max-height: 45px; display: inline-block; vertical-align: middle; margin-right: 10px;" alt="Logo">
+                                    @elseif(file_exists(public_path('images/logo-bg-transparent.png')))
+                                        <img src="{{ public_path('images/logo-bg-transparent.png') }}" style="max-height: 40px; display: inline-block; vertical-align: middle; margin-right: 10px;" alt="StockSync Logo">
+                                    @endif
                                     <h2 style="margin: 0; display: inline-block; color: #111827; font-size: 24px; vertical-align: middle;">{{ $company ? $company->name : 'StockSync IMS' }}</h2>
                                 </div>
                             </td>
@@ -179,9 +183,21 @@
             </tr>
         </table>
         
-        <div style="margin-top: 50px; text-align: center; color: #777; font-size: 12px;">
+        <div style="margin-top: 40px; text-align: center; color: #777; font-size: 12px; border-top: 1px solid #eee; padding-top: 15px;">
             Thank you for your business!<br>
             If you have any questions concerning this invoice, use the contact information above.
+            
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #e5e7eb; text-align: center;">
+                <div style="margin-bottom: 4px;">
+                    @if(file_exists(public_path('images/logo-bg-transparent.png')))
+                        <img src="{{ public_path('images/logo-bg-transparent.png') }}" style="max-height: 18px; vertical-align: middle; margin-right: 4px;" alt="StockSync Logo">
+                    @endif
+                    <span style="font-size: 11px; font-weight: bold; color: #374151; vertical-align: middle;">StockSync IMS</span>
+                </div>
+                <div style="font-size: 10px; color: #6B7280;">
+                    System Provided & Powered by <strong>StockSync IMS</strong> • www.stocksync.com • support@stocksync.com
+                </div>
+            </div>
         </div>
     </div>
 </body>
