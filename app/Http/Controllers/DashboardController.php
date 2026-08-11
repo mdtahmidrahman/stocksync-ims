@@ -45,6 +45,12 @@ class DashboardController extends Controller
         $healthyPercentage = $totalProducts > 0 ? round(($healthyStockCount / $totalProducts) * 100) : 0;
         
         $todaySales = (clone $saleQuery)->whereDate('created_at', Carbon::today())->sum('total_amount');
+        $yesterdaySales = (clone $saleQuery)->whereDate('created_at', Carbon::yesterday())->sum('total_amount');
+        
+        $salesGrowth = 0;
+        if ($yesterdaySales > 0) {
+            $salesGrowth = round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 1);
+        }
         
         $pendingDeliveries = (clone $purchaseQuery)->whereIn('status', ['pending', 'draft'])->count();
 
@@ -119,9 +125,15 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'kpis' => [
                 'totalInventoryValue' => $totalInventoryValue,
+                'inventoryBadge' => "{$healthyPercentage}% Health Rate",
                 'lowStockCount' => $lowStockCount + $outOfStockCount,
+                'lowStockBadge' => ($lowStockCount + $outOfStockCount > 0) ? ($outOfStockCount > 0 ? "{$outOfStockCount} Out of Stock" : "{$lowStockCount} Low") : "Optimal",
+                'isLowStockWarning' => ($lowStockCount + $outOfStockCount) > 0,
                 'todaySales' => $todaySales,
+                'todaySalesBadge' => $yesterdaySales > 0 ? ($salesGrowth >= 0 ? "+{$salesGrowth}% vs yest." : "{$salesGrowth}% vs yest.") : 'Live Today',
+                'todaySalesPositive' => $salesGrowth >= 0,
                 'pendingDeliveries' => $pendingDeliveries,
+                'pendingDeliveriesBadge' => $pendingDeliveries > 0 ? "{$pendingDeliveries} Open POs" : "Up to Date",
             ],
             'stockStatus' => [
                 'healthy' => $healthyStockCount,
