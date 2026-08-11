@@ -14,7 +14,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\SupportController;
@@ -98,9 +97,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices/order/{order}', [InvoiceController::class, 'orderInvoice'])->name('invoice.order');
     Route::get('/invoices/purchase/{purchase}', [InvoiceController::class, 'purchaseInvoice'])->name('invoice.purchase');
 
-    Route::get('/inventory', [InventoryController::class, 'index'])->middleware('role:admin|manager|staff');
-    Route::post('/inventory/adjust', [InventoryController::class, 'adjust'])->middleware('role:admin|manager');
-    Route::get('/inventory/history/{product}', [InventoryController::class, 'history'])->middleware('role:admin|manager|staff');
+    Route::post('/products/adjust', [ProductController::class, 'adjust'])->middleware('role:admin|manager');
+    Route::get('/products/history/{product}', [ProductController::class, 'history'])->middleware('role:admin|manager|staff');
 
     Route::get('/purchases', [PurchaseController::class, 'index'])->middleware('role:admin|manager');
     Route::post('/purchases', [PurchaseController::class, 'store'])->middleware('role:admin|manager');

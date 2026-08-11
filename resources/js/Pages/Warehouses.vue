@@ -139,7 +139,10 @@
                     {{ item.quantity }} units
                   </span>
                 </td>
-                <td class="p-4 text-right">
+                <td class="p-4 text-right flex items-center justify-end gap-3">
+                  <button @click="openHistory(item.product_id)" class="text-xs font-bold text-gray-600 dark:text-gray-400 hover:underline">
+                    History
+                  </button>
                   <button @click="quickTransfer(item)" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">
                     Transfer Stock &rarr;
                   </button>
@@ -447,6 +450,50 @@
       @close="showDeleteModal = false; itemToDelete = null"
       @confirm="executeDeleteWarehouse"
     />
+
+    <!-- Movement History Modal -->
+    <Modal :show="showHistoryModal" @close="showHistoryModal = false" title="Product Movement History">
+      <template #body>
+        <div class="space-y-4">
+          <div v-if="loadingHistory" class="p-6 text-center text-gray-500 dark:text-gray-400">Loading history...</div>
+          <div v-else class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                <tr>
+                  <th class="p-3 font-medium">Date</th>
+                  <th class="p-3 font-medium">Type</th>
+                  <th class="p-3 font-medium">Warehouse</th>
+                  <th class="p-3 font-medium">Remarks</th>
+                  <th class="p-3 font-medium text-right">Qty</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr v-if="historyLogs.length === 0">
+                  <td colspan="5" class="p-4 text-center text-gray-500 dark:text-gray-400">No stock movements recorded yet.</td>
+                </tr>
+                <tr v-for="log in historyLogs" :key="log.id">
+                  <td class="p-3 text-gray-900 dark:text-white whitespace-nowrap">{{ formatDateTime(log.created_at) }}</td>
+                  <td class="p-3">
+                    <span :class="[
+                      'px-2 py-0.5 rounded text-xs capitalize',
+                      log.quantity > 0 ? 'text-green-600 bg-green-100 dark:bg-green-900/30' : 'text-red-600 bg-red-100 dark:bg-red-900/30'
+                    ]">{{ log.type }}</span>
+                  </td>
+                  <td class="p-3 text-gray-500 dark:text-gray-400">{{ log.warehouse?.name || '-' }}</td>
+                  <td class="p-3 text-gray-500 dark:text-gray-400">{{ log.remarks || 'Stock Movement' }}</td>
+                  <td :class="['p-3 text-right font-medium', log.quantity > 0 ? 'text-green-600' : 'text-red-600']">
+                    {{ log.quantity > 0 ? '+' : '' }}{{ log.quantity }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <button @click="showHistoryModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors">Close</button>
+      </template>
+    </Modal>
   </AppLayout>
 </template>
 <script setup>
@@ -692,5 +739,31 @@ const updateTransferStatus = (transferId, status) => {
     router.put(`/warehouses/transfers/${transferId}/status`, { status }, {
         preserveScroll: true
     });
+};
+
+const showHistoryModal = ref(false);
+const loadingHistory = ref(false);
+const historyLogs = ref([]);
+
+const openHistory = (productId) => {
+  showHistoryModal.value = true;
+  loadingHistory.value = true;
+  historyLogs.value = [];
+  
+  fetch(`/products/history/${productId}`)
+    .then(res => res.json())
+    .then(data => {
+      historyLogs.value = data.movements || [];
+    })
+    .catch(err => console.error('Failed to load history', err))
+    .finally(() => {
+      loadingHistory.value = false;
+    });
+};
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 </script>
