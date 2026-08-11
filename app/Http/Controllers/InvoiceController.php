@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Sale;
 use App\Models\Order;
+use App\Models\Purchase;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Company;
+use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
 {
-    public function saleInvoice(Sale $sale)
+    public function saleInvoice(Request $request, Sale $sale)
     {
         $sale->load(['customer', 'items.product']);
         $company = auth()->user() ? auth()->user()->company : Company::first();
@@ -27,10 +29,14 @@ class InvoiceController extends Controller
             'date' => $sale->created_at->format('M d, Y'),
         ])->setPaper([0, 0, 226.77, 800], 'portrait');
 
-        return $pdf->download('Receipt_' . ($sale->invoice_number ?? $sale->reference_number) . '.pdf');
+        if ($request->has('download')) {
+            return $pdf->download('Receipt_' . ($sale->invoice_number ?? $sale->reference_number) . '.pdf');
+        }
+
+        return $pdf->stream('Receipt_' . ($sale->invoice_number ?? $sale->reference_number) . '.pdf');
     }
 
-    public function orderInvoice(Order $order)
+    public function orderInvoice(Request $request, Order $order)
     {
         $order->load(['customer', 'items.product']);
         $company = auth()->user() ? auth()->user()->company : Company::first();
@@ -48,10 +54,14 @@ class InvoiceController extends Controller
             'date' => $order->created_at->format('M d, Y'),
         ]);
 
-        return $pdf->download('Invoice_' . $order->order_number . '.pdf');
+        if ($request->has('download')) {
+            return $pdf->download('Invoice_' . $order->order_number . '.pdf');
+        }
+
+        return $pdf->stream('Invoice_' . $order->order_number . '.pdf');
     }
 
-    public function purchaseInvoice(\App\Models\Purchase $purchase)
+    public function purchaseInvoice(Request $request, Purchase $purchase)
     {
         $purchase->load(['supplier', 'items.product']);
         $company = auth()->user() ? auth()->user()->company : Company::first();
@@ -69,6 +79,10 @@ class InvoiceController extends Controller
             'date' => $purchase->created_at->format('M d, Y'),
         ]);
 
-        return $pdf->download('Purchase_Order_' . $purchase->reference_number . '.pdf');
+        if ($request->has('download')) {
+            return $pdf->download('Purchase_Order_' . $purchase->reference_number . '.pdf');
+        }
+
+        return $pdf->stream('Purchase_Order_' . $purchase->reference_number . '.pdf');
     }
 }
