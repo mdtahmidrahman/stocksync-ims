@@ -6,6 +6,17 @@
       'flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ease-in-out',
       isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
     ]">
+      <!-- Impersonation Banner -->
+      <div v-if="$page.props.auth?.is_impersonating" class="bg-primary-600 text-white px-4 py-2 flex items-center justify-between text-sm shadow-md z-50 shrink-0">
+         <div class="flex items-center gap-2 font-medium">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            <span>You are currently impersonating <strong class="font-bold">{{ $page.props.auth.user.name }}</strong> ({{ $page.props.auth.company?.name }}).</span>
+         </div>
+         <a href="/platform/impersonate/leave" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded transition-colors font-medium">
+            End Impersonation
+         </a>
+      </div>
+
       <!-- Top header -->
       <header class="h-16 px-4 md:px-8 flex items-center justify-between md:justify-end bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shrink-0 transition-colors">
          <!-- Mobile Hamburger -->
@@ -43,6 +54,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import Sidebar from '../Components/Sidebar.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 import Tooltip from '../Components/Tooltip.vue';
@@ -52,4 +64,8 @@ import { useAppState } from '../Composables/useAppState';
 const { toggleMobileMenu, isSidebarCollapsed } = useAppState();
 const showNotificationsPanel = ref(false);
 const unreadCount = ref(0);
+
+const leaveImpersonation = () => {
+    router.post('/platform/impersonate/leave');
+};
 </script>
