@@ -7,7 +7,9 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Build Composer dependencies
-FROM composer:2.7 AS composer_builder
+FROM php:8.3-cli AS composer_builder
+RUN apt-get update && apt-get install -y git unzip zip
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --ignore-platform-reqs
