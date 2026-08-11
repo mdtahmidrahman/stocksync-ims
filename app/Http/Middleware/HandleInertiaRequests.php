@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
                     'company_id' => $request->user()->company_id,
                 ] : null,
+                'is_impersonating' => \Illuminate\Support\Facades\Session::has('impersonated_by'),
                 'company' => $request->user() ? Company::find($request->user()->company_id)?->only(['name', 'currency']) : null,
             ],
             'flash' => [

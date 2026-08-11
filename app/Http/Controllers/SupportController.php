@@ -87,4 +87,19 @@ class SupportController extends Controller
 
         return redirect()->back()->with('success', 'Ticket status updated.');
     }
+
+    public function toggleImpersonation(Request $request)
+    {
+        $request->validate([
+            'allow' => 'required|boolean'
+        ]);
+
+        $company = auth()->user()->company;
+        if ($company) {
+            $company->update(['allow_support_impersonation' => $request->allow]);
+            AuditLog::record('Impersonation Settings Updated', "Support impersonation access set to " . ($request->allow ? 'allowed' : 'revoked') . ".");
+        }
+
+        return redirect()->back()->with('success', 'Impersonation settings updated.');
+    }
 }

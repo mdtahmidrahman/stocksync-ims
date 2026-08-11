@@ -98,11 +98,25 @@
         <div class="bg-gradient-to-r from-primary-900 to-slate-900 rounded-xl p-6 text-white shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h3 class="text-lg font-bold text-white">Need Urgent System Assistance?</h3>
-            <p class="text-xs text-primary-200 mt-1">Our technical support line is available 24/7 for critical Bangladesh warehouse operations.</p>
+            <p class="text-primary-100 text-sm mt-1">If you are facing a critical issue, our support team can help.</p>
           </div>
-          <a href="mailto:support@abccompany.com" class="px-4 py-2 bg-white text-primary-900 hover:bg-gray-100 font-semibold text-xs rounded-xl shrink-0 transition-colors shadow-sm">
-            Contact Support Desk
-          </a>
+          <div class="flex items-center gap-3 shrink-0">
+             <a href="mailto:support@stocksync.com" class="px-5 py-2.5 bg-white text-primary-900 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm">
+                Email Support Team
+             </a>
+          </div>
+        </div>
+
+        <!-- Allow Support Impersonation Toggle (For Admins) -->
+        <div v-if="$page.props.auth.user?.roles?.includes('admin')" class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex items-center justify-between transition-colors">
+          <div>
+            <h3 class="text-md font-bold text-gray-900 dark:text-white">Allow Support Impersonation</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Grant our platform support team temporary access to log into your account to troubleshoot issues.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+            <input type="checkbox" :checked="$page.props.auth.company?.allow_support_impersonation" @change="toggleImpersonation" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-gray-600 peer-checked:bg-primary-600"></div>
+          </label>
         </div>
 
         <!-- FAQs Card -->
@@ -274,6 +288,12 @@ const selectedTicket = ref(null);
 const replyMessage = ref('');
 const updateStatusValue = ref('open');
 const isSubmittingReply = ref(false);
+
+const toggleImpersonation = (e) => {
+    router.put('/support/impersonation', {
+        allow: e.target.checked
+    }, { preserveScroll: true });
+};
 
 const openTicketDetails = (ticket) => {
   selectedTicket.value = ticket;
