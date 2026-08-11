@@ -32,3 +32,19 @@ services:
         value: database
       - key: LOG_CHANNEL
         value: stderr
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: "smtp-relay.brevo.com" 
+      - key: MAIL_PORT
+        value: "2525"
+      - key: MAIL_USERNAME
+        value: "" 
+      - key: MAIL_PASSWORD
+        value: ""
+      - key: MAIL_ENCRYPTION
+        value: null
+      - key: MAIL_FROM_ADDRESS
+        value: "noreply@stocksync.com"
+      - key: MAIL_FROM_NAME
+        value: "${APP_NAME}"
