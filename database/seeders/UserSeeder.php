@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
         Role::create(['name' => 'staff']);
 
         $company = Company::create([
-            'name' => 'StockSync Demo HQ',
+            'name' => 'ABC HQ',
         ]);
 
         // 1. Platform Owner (Super Admin) - No company tied
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
         // 2. Company Admin
         $admin = User::create([
             'name' => 'Admin User',
-            'email' => 'admin@stocksync.com',
+            'email' => 'admin@abccompany.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'company_id' => $company->id,
@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
 
         $manager = User::create([
             'name' => 'Manager User',
-            'email' => 'manager@stocksync.com',
+            'email' => 'manager@abccompany.com',
             'password' => Hash::make('password'),
             'role' => 'manager',
             'company_id' => $company->id,
@@ -59,7 +59,7 @@ class UserSeeder extends Seeder
 
         $staff = User::create([
             'name' => 'Staff User',
-            'email' => 'staff@stocksync.com',
+            'email' => 'staff@abccompany.com',
             'password' => Hash::make('password'),
             'role' => 'staff',
             'company_id' => $company->id,
