@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Build Composer dependencies
-FROM php:8.3-cli AS composer_builder
+FROM php:8.4-cli AS composer_builder
 RUN apt-get update && apt-get install -y git unzip zip
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev --no-scripts
 
 # Stage 3: Final Apache Image
-FROM php:8.3-apache
+FROM php:8.4-apache
 
 # Install system dependencies & PHP extensions required by Laravel & PostgreSQL/MySQL
 RUN apt-get update && apt-get install -y \
