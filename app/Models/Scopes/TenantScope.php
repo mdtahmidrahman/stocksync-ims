@@ -14,9 +14,12 @@ class TenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        // Use Auth::hasUser() to prevent infinite loop when Laravel resolves the Auth user.
-        if (Auth::hasUser() && !Auth::user()->isSuperAdmin()) {
-            $builder->where($model->getTable() . '.company_id', Auth::user()->company_id);
+        // Use Auth::hasUser() to prevent infinite loop when resolving Auth user
+        if (Auth::hasUser()) {
+            $user = Auth::user();
+            if ($user && !$user->isSuperAdmin()) {
+                $builder->where($model->getTable() . '.company_id', $user->company_id);
+            }
         }
     }
 }

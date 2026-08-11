@@ -17,18 +17,36 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        $companyId = $user ? $user->company_id : null;
+
+        // Base Scoped Queries
+        $productQuery = Product::query();
+        $saleQuery = Sale::query();
+        $purchaseQuery = Purchase::query();
+        $saleItemQuery = SaleItem::query();
+        $purchaseItemQuery = PurchaseItem::query();
+
+        if ($companyId) {
+            $productQuery->where('company_id', $companyId);
+            $saleQuery->where('company_id', $companyId);
+            $purchaseQuery->where('company_id', $companyId);
+            $saleItemQuery->whereHas('sale', fn($q) => $q->where('company_id', $companyId));
+            $purchaseItemQuery->whereHas('purchase', fn($q) => $q->where('company_id', $companyId));
+        }
+
         // KPIs
-        $totalInventoryValue = Product::selectRaw('SUM(cost * stock_quantity) as total_value')->value('total_value') ?? 0;
+        $totalInventoryValue = (clone $productQuery)->selectRaw('SUM(cost * stock_quantity) as total_value')->value('total_value') ?? 0;
         
-        $outOfStockCount = Product::where('stock_quantity', '<=', 0)->count();
-        $lowStockCount = Product::where('stock_quantity', '>', 0)->where('stock_quantity', '<', 10)->count();
-        $healthyStockCount = Product::where('stock_quantity', '>=', 10)->count();
+        $outOfStockCount = (clone $productQuery)->where('stock_quantity', '<=', 0)->count();
+        $lowStockCount = (clone $productQuery)->where('stock_quantity', '>', 0)->where('stock_quantity', '<', 10)->count();
+        $healthyStockCount = (clone $productQuery)->where('stock_quantity', '>=', 10)->count();
         $totalProducts = $outOfStockCount + $lowStockCount + $healthyStockCount;
         $healthyPercentage = $totalProducts > 0 ? round(($healthyStockCount / $totalProducts) * 100) : 0;
         
-        $todaySales = Sale::whereDate('created_at', Carbon::today())->sum('total_amount');
+        $todaySales = (clone $saleQuery)->whereDate('created_at', Carbon::today())->sum('total_amount');
         
-        $pendingDeliveries = Purchase::whereIn('status', ['pending', 'draft'])->count();
+        $pendingDeliveries = (clone $purchaseQuery)->whereIn('status', ['pending', 'draft'])->count();
 
         // Weekly Sales vs Restock Analytics (Last 7 days)
         $weeklySalesRestock = [];
@@ -37,8 +55,8 @@ class DashboardController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             
-            $itemsSold = SaleItem::whereDate('created_at', $date)->sum('quantity') ?? 0;
-            $itemsRestocked = PurchaseItem::whereDate('created_at', $date)->sum('quantity') ?? 0;
+            $itemsSold = (clone $saleItemQuery)->whereDate('created_at', $date)->sum('quantity') ?? 0;
+            $itemsRestocked = (clone $purchaseItemQuery)->whereDate('created_at', $date)->sum('quantity') ?? 0;
             
             $weeklySalesRestock[] = [
                 'label' => $date->format('D'),
@@ -58,7 +76,8 @@ class DashboardController extends Controller
         }
 
         // Top Performing Products (by Revenue)
-        $topProducts = SaleItem::select('product_id', DB::raw('SUM(quantity) as total_sold'), DB::raw('SUM(subtotal) as total_revenue'))
+        $topProducts = (clone $saleItemQuery)
+            ->select('product_id', DB::raw('SUM(quantity) as total_sold'), DB::raw('SUM(subtotal) as total_revenue'))
             ->with('product')
             ->groupBy('product_id')
             ->orderByDesc('total_revenue')
@@ -66,7 +85,7 @@ class DashboardController extends Controller
             ->get();
 
         // Attention Required Feed
-        $attentionFeed = Product::where('stock_quantity', '<', 10)->limit(4)->get()->map(function ($product) {
+        $attentionFeed = (clone $productQuery)->where('stock_quantity', '<', 10)->limit(4)->get()->map(function ($product) {
             return [
                 'id' => $product->id,
                 'message' => "{$product->name} (SKU: {$product->sku}) is running low on stock ({$product->stock_quantity} remaining).",
@@ -75,7 +94,7 @@ class DashboardController extends Controller
         });
 
         // Recent Activity Timeline
-        $recentSales = Sale::with('user')->latest()->limit(5)->get()->map(function ($sale) {
+        $recentSales = (clone $saleQuery)->with('user')->latest()->limit(5)->get()->map(function ($sale) {
             return [
                 'type' => 'sale',
                 'title' => 'New POS Sale Completed',
@@ -85,11 +104,11 @@ class DashboardController extends Controller
             ];
         });
 
-        $recentPurchases = Purchase::with('supplier')->latest()->limit(5)->get()->map(function ($purchase) {
+        $recentPurchases = (clone $purchaseQuery)->with('supplier')->latest()->limit(5)->get()->map(function ($purchase) {
             return [
                 'type' => 'purchase',
                 'title' => 'Purchase Order Created',
-                'description' => "PO {$purchase->reference_number} created for " . ($purchase->supplier->name ?? 'Vendor'),
+                'description' => "PO {$purchase->purchase_number} created for " . ($purchase->supplier->name ?? 'Vendor'),
                 'time' => $purchase->created_at->diffForHumans(),
                 'created_at' => $purchase->created_at
             ];
