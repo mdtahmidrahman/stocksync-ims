@@ -22,6 +22,9 @@ class Company extends Model
         'pos_receipt_footer',
         'printer_type',
         'auto_print_receipt',
+        'allow_support_impersonation',
+        'subscription_tier',
+        'mrr',
     ];
 
     /**

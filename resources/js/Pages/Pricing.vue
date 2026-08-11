@@ -31,35 +31,39 @@
 
       <!-- Pricing Cards Grid -->
       <div class="container mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 max-w-6xl mb-16 md:mb-24">
-        <!-- Tier 1: Starter -->
+        <!-- Tier 1: Free -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 md:p-8 hover:shadow-xl transition-all flex flex-col justify-between">
           <div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Starter</h3>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Free</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">For small businesses starting their inventory journey.</p>
             <div class="flex items-baseline gap-1 mb-8">
-              <span class="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white">${{ isAnnual ? '24' : '29' }}</span>
+              <span class="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white">৳0</span>
               <span class="text-sm text-gray-500 dark:text-gray-400 font-semibold">/month</span>
             </div>
             <ul class="flex flex-col gap-4 text-sm text-gray-700 dark:text-gray-300">
-              <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> Up to 500 SKUs</li>
+              <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> Up to 100 SKUs</li>
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> 2 User Seats</li>
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> 1 Warehouse Location</li>
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> Standard Reporting</li>
             </ul>
           </div>
-          <Link href="/register" class="mt-8 block text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold py-3.5 rounded-xl transition-colors">
+          
+          <button v-if="$page.props.auth?.user" @click="upgrade('free')" :disabled="currentPlan === 'free' || processing" :class="['mt-8 block text-center font-bold py-3.5 rounded-xl transition-colors', currentPlan === 'free' ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white']">
+             {{ currentPlan === 'free' ? 'Current Plan' : 'Downgrade to Free' }}
+          </button>
+          <Link v-else href="/register" class="mt-8 block text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold py-3.5 rounded-xl transition-colors">
             Start Free Trial
           </Link>
         </div>
 
-        <!-- Tier 2: Growth (Popular) -->
+        <!-- Tier 2: Basic (Popular) -->
         <div class="relative bg-white dark:bg-gray-900 border-2 border-primary-600 rounded-3xl p-6 md:p-8 shadow-2xl hover:scale-[1.02] transition-all flex flex-col justify-between">
           <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">Most Popular</span>
           <div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Growth</h3>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Basic</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Perfect for growing brands looking to scale automation.</p>
             <div class="flex items-baseline gap-1 mb-8">
-              <span class="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white">${{ isAnnual ? '64' : '79' }}</span>
+              <span class="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white">৳{{ isAnnual ? '3,920' : '4,900' }}</span>
               <span class="text-sm text-gray-500 dark:text-gray-400 font-semibold">/month</span>
             </div>
             <ul class="flex flex-col gap-4 text-sm text-gray-700 dark:text-gray-300">
@@ -67,21 +71,25 @@
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> 5 User Seats</li>
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> 3 Warehouse Locations</li>
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> Intelligent Forecasting</li>
-              <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> Omnichannel Sync</li>
+              <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> POS Integration</li>
             </ul>
           </div>
-          <Link href="/register" class="mt-8 block text-center bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-500/20 transition-all">
+          <button v-if="$page.props.auth?.user" @click="upgrade('basic')" :disabled="currentPlan === 'basic' || processing" :class="['mt-8 block text-center font-bold py-3.5 rounded-xl shadow-lg shadow-primary-500/20 transition-all', currentPlan === 'basic' ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-none shadow-none' : (currentPlan === 'pro' ? 'bg-gray-100 hover:bg-gray-200 text-gray-900 shadow-none' : 'bg-primary-600 hover:bg-primary-700 text-white')]">
+             {{ currentPlan === 'basic' ? 'Current Plan' : (currentPlan === 'pro' ? 'Downgrade to Basic' : 'Upgrade to Basic') }}
+          </button>
+          <Link v-else href="/register" class="mt-8 block text-center bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-500/20 transition-all">
             Start Free Trial
           </Link>
         </div>
 
-        <!-- Tier 3: Enterprise -->
+        <!-- Tier 3: Pro -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 md:p-8 hover:shadow-xl transition-all flex flex-col justify-between">
           <div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Enterprise</h3>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Pro</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Designed for larger corporations requiring high performance.</p>
             <div class="flex items-baseline gap-1 mb-8">
-              <span class="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white">Custom</span>
+              <span class="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white">৳{{ isAnnual ? '7,920' : '9,900' }}</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400 font-semibold">/month</span>
             </div>
             <ul class="flex flex-col gap-4 text-sm text-gray-700 dark:text-gray-300">
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> Unlimited SKUs</li>
@@ -91,8 +99,11 @@
               <li class="flex items-center gap-3"><svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> 99.99% SLA Uptime</li>
             </ul>
           </div>
-          <Link href="/register" class="mt-8 block text-center bg-gray-900 hover:bg-black dark:bg-gray-800 dark:hover:bg-gray-700 text-white font-bold py-3.5 rounded-xl transition-colors">
-            Contact Sales
+          <button v-if="$page.props.auth?.user" @click="upgrade('pro')" :disabled="currentPlan === 'pro' || processing" :class="['mt-8 block text-center font-bold py-3.5 rounded-xl transition-colors', currentPlan === 'pro' ? 'bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800' : 'bg-gray-900 hover:bg-black dark:bg-gray-800 dark:hover:bg-gray-700 text-white']">
+             {{ currentPlan === 'pro' ? 'Current Plan' : 'Upgrade to Pro' }}
+          </button>
+          <Link v-else href="/register" class="mt-8 block text-center bg-gray-900 hover:bg-black dark:bg-gray-800 dark:hover:bg-gray-700 text-white font-bold py-3.5 rounded-xl transition-colors">
+            Start Free Trial
           </Link>
         </div>
       </div>
@@ -136,8 +147,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { router, usePage, Link } from '@inertiajs/vue3';
 import PublicLayout from '../Layouts/PublicLayout.vue';
 
+const page = usePage();
 const isAnnual = ref(true);
+
+const currentPlan = computed(() => page.props.auth?.company?.subscription_tier || null);
+const processing = ref(false);
+
+const upgrade = (plan) => {
+    if (!page.props.auth?.user) return;
+    
+    processing.value = true;
+    router.post('/billing/upgrade', { plan }, {
+        preserveScroll: true,
+        onFinish: () => {
+            processing.value = false;
+        }
+    });
+};
 </script>

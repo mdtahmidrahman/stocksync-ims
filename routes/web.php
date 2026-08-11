@@ -7,6 +7,9 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PlatformController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\PlatformTenantController;
+use App\Http\Controllers\PlatformBillingController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
@@ -52,8 +55,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
-    Route::get('/platform', [PlatformController::class, 'dashboardMetrics'])->middleware('role:super_admin');
-    Route::post('/platform/companies', [PlatformController::class, 'storeCompany'])->middleware('role:super_admin');
+    // Platform Super Admin Routes
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('/platform', [PlatformController::class, 'dashboardMetrics'])->name('platform.dashboard');
+        Route::post('/platform/companies', [PlatformController::class, 'storeCompany'])->name('platform.companies.store');
+        
+        Route::get('/platform/tenants', [PlatformTenantController::class, 'index'])->name('platform.tenants.index');
+        Route::put('/platform/tenants/{company}/status', [PlatformTenantController::class, 'updateStatus'])->name('platform.tenants.status');
+        Route::put('/platform/tenants/{company}/tier', [PlatformTenantController::class, 'updateTier'])->name('platform.tenants.tier');
+        Route::get('/platform/tenants/{company}/impersonate', [PlatformTenantController::class, 'impersonate'])->name('platform.tenants.impersonate');
+        
+        Route::get('/platform/billing', [PlatformBillingController::class, 'index'])->name('platform.billing.index');
+    });
+
+    // Impersonation exit route (any authenticated user can hit this if they are impersonating)
+    Route::get('/platform/impersonate/leave', [PlatformTenantController::class, 'leaveImpersonation'])->name('platform.impersonate.leave');
 
     // Products (Web / Inertia)
     Route::get('/products/export', [ProductController::class, 'export'])->middleware('role:admin|manager');
@@ -119,6 +135,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/support', [SupportController::class, 'store']);
     Route::post('/support/{ticket}/reply', [SupportController::class, 'reply']);
     Route::put('/support/{ticket}/status', [SupportController::class, 'updateStatus']);
+    Route::put('/support/impersonation', [SupportController::class, 'toggleImpersonation']);
+
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index')->middleware('role:admin|manager');
+    Route::post('/billing/upgrade', [BillingController::class, 'upgrade'])->name('billing.upgrade')->middleware('role:admin|manager');
+    Route::get('/pricing', [BillingController::class, 'pricing'])->name('pricing');
 
     Route::get('/sales', [SaleController::class, 'index'])->middleware('role:admin|manager|staff');
     Route::post('/sales', [SaleController::class, 'store'])->middleware('role:admin|manager|staff');
