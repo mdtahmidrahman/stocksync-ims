@@ -40,7 +40,7 @@
       </div>
 
       <!-- Table -->
-      <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
+      <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]" @scroll="handleScroll">
         <table class="w-full text-left border-collapse">
           <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-black/90">
             <tr class="bg-gray-50 dark:bg-black/50 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
@@ -53,10 +53,10 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr v-if="!payments.data || payments.data.length === 0">
+            <tr v-if="!localPayments || localPayments.length === 0">
               <td colspan="6" class="p-6 text-center text-gray-500 dark:text-gray-400">No payment transactions recorded yet.</td>
             </tr>
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="pay in payments.data" :key="pay.id">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="pay in localPayments" :key="pay.id">
               <td class="p-4 text-sm font-medium text-primary-600 dark:text-primary-400 whitespace-nowrap">
                 {{ pay.reference_number || ('PAY-' + pay.id) }}
               </td>
@@ -81,6 +81,17 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Scrollable Chunk Pagination Footer -->
+      <div v-if="localPayments && localPayments.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+        <div class="text-xs text-gray-500 dark:text-gray-400">
+          Showing <span class="font-bold text-gray-900 dark:text-white">{{ localPayments.length }}</span> of <span class="font-bold text-gray-900 dark:text-white">{{ props.payments.total }}</span> payment transactions
+        </div>
+        <div v-if="isFetchingNextPage" class="text-xs font-semibold text-primary-600 dark:text-primary-400 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Loading next 50 payments...
+        </div>
+      </div>
     </div>
   </div>
   </AppLayout>
@@ -90,7 +101,7 @@
 import AppLayout from '../Layouts/AppLayout.vue';
 import Dropdown from '../Components/Dropdown.vue';
 import AutoFitText from '../Components/AutoFitText.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useCurrency } from '../Composables/useCurrency';
 import { formatDate } from '../Composables/useDate';
@@ -100,6 +111,39 @@ const props = defineProps({
   metrics: Object,
   filters: Object,
 });
+
+const localPayments = ref([]);
+const isFetchingNextPage = ref(false);
+
+watch(() => props.payments.data, (newData) => {
+    if (props.payments.current_page === 1) {
+        localPayments.value = newData || [];
+    } else if (newData && newData.length) {
+        const existingIds = new Set(localPayments.value.map(i => i.id));
+        const newItems = newData.filter(i => !existingIds.has(i.id));
+        localPayments.value = [...localPayments.value, ...newItems];
+    }
+}, { immediate: true });
+
+const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 80) {
+        fetchNextPage();
+    }
+};
+
+const fetchNextPage = () => {
+    if (props.payments.next_page_url && !isFetchingNextPage.value) {
+        isFetchingNextPage.value = true;
+        router.get(props.payments.next_page_url, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                isFetchingNextPage.value = false;
+            }
+        });
+    }
+};
 
 const { currencySymbol } = useCurrency();
 const paymentType = ref(props.filters?.type || 'All Types');

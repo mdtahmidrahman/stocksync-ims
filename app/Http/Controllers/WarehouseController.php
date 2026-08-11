@@ -16,7 +16,7 @@ class WarehouseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Warehouse::with(['manager', 'products']);
+        $query = Warehouse::with(['manager', 'products.category']);
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')

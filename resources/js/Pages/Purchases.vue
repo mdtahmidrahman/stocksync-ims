@@ -17,7 +17,7 @@
           <button @click="openAddModal" class="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Record Purchase</button>
       </div>
 
-      <div v-else class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
+      <div v-else class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]" @scroll="handleScroll">
         <table class="w-full text-left border-collapse">
           <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-black/90">
             <tr class="bg-gray-50 dark:bg-black/50 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
@@ -30,7 +30,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="purchase in purchases.data" :key="purchase.id">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" v-for="purchase in localPurchases" :key="purchase.id">
               <td class="p-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">{{ formatDate(purchase.created_at) }}</td>
               <td class="p-4 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap font-medium">{{ purchase.reference_number }}</td>
               <td class="p-4">
@@ -55,8 +55,17 @@
           </tbody>
         </table>
       </div>
-      
-      <!-- Pagination Component here if needed, keeping it simple for now -->
+
+      <!-- Scrollable Chunk Pagination Footer -->
+      <div v-if="localPurchases && localPurchases.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+        <div class="text-xs text-gray-500 dark:text-gray-400">
+          Showing <span class="font-bold text-gray-900 dark:text-white">{{ localPurchases.length }}</span> of <span class="font-bold text-gray-900 dark:text-white">{{ props.purchases.total }}</span> purchase orders
+        </div>
+        <div v-if="isFetchingNextPage" class="text-xs font-semibold text-primary-600 dark:text-primary-400 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Loading next 50 purchases...
+        </div>
+      </div>
     </div>
 
     <!-- Record Purchase Modal -->
@@ -170,7 +179,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
@@ -185,6 +194,39 @@ const props = defineProps({
     suppliers: Array,
     products: Array,
 });
+
+const localPurchases = ref([]);
+const isFetchingNextPage = ref(false);
+
+watch(() => props.purchases.data, (newData) => {
+    if (props.purchases.current_page === 1) {
+        localPurchases.value = newData || [];
+    } else if (newData && newData.length) {
+        const existingIds = new Set(localPurchases.value.map(i => i.id));
+        const newItems = newData.filter(i => !existingIds.has(i.id));
+        localPurchases.value = [...localPurchases.value, ...newItems];
+    }
+}, { immediate: true });
+
+const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 80) {
+        fetchNextPage();
+    }
+};
+
+const fetchNextPage = () => {
+    if (props.purchases.next_page_url && !isFetchingNextPage.value) {
+        isFetchingNextPage.value = true;
+        router.get(props.purchases.next_page_url, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                isFetchingNextPage.value = false;
+            }
+        });
+    }
+};
 
 const showAddModal = ref(false);
 const showDeleteModal = ref(false);

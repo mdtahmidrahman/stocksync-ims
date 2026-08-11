@@ -26,7 +26,7 @@
       </div>
 
       <!-- Table -->
-      <div v-else class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
+      <div v-else class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]" @scroll="handleScroll">
         <table class="w-full text-left border-collapse">
           <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-[#151515]">
             <tr class="bg-gray-50 dark:bg-transparent border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">
@@ -74,6 +74,17 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Scrollable Chunk Pagination Footer -->
+      <div v-if="localOrders && localOrders.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+        <div class="text-xs text-gray-500 dark:text-gray-400">
+          Showing <span class="font-bold text-gray-900 dark:text-white">{{ localOrders.length }}</span> of <span class="font-bold text-gray-900 dark:text-white">{{ props.orders?.total || localOrders.length }}</span> orders
+        </div>
+        <div v-if="isFetchingNextPage" class="text-xs font-semibold text-primary-600 dark:text-primary-400 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Loading next 50 orders...
+        </div>
       </div>
     </div>
 
@@ -296,7 +307,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import Modal from '../Components/Modal.vue';
@@ -313,6 +324,39 @@ const props = defineProps({
     warehouses: Array,
 });
 
+const localOrders = ref([]);
+const isFetchingNextPage = ref(false);
+
+watch(() => props.orders.data, (newData) => {
+    if (props.orders.current_page === 1) {
+        localOrders.value = newData || [];
+    } else if (newData && newData.length) {
+        const existingIds = new Set(localOrders.value.map(i => i.id));
+        const newItems = newData.filter(i => !existingIds.has(i.id));
+        localOrders.value = [...localOrders.value, ...newItems];
+    }
+}, { immediate: true });
+
+const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 80) {
+        fetchNextPage();
+    }
+};
+
+const fetchNextPage = () => {
+    if (props.orders.next_page_url && !isFetchingNextPage.value) {
+        isFetchingNextPage.value = true;
+        router.get(props.orders.next_page_url, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                isFetchingNextPage.value = false;
+            }
+        });
+    }
+};
+
 const showAddModal = ref(false);
 const showManageModal = ref(false);
 const showDeleteModal = ref(false);
@@ -321,12 +365,12 @@ const activeOrder = ref(null);
 const activeTab = ref('All Orders');
 
 const filteredOrders = computed(() => {
-    if (!props.orders || !props.orders.data) return [];
-    if (activeTab.value === 'All Orders') return props.orders.data;
-    if (activeTab.value === 'Pending') return props.orders.data.filter(o => o.status === 'pending');
-    if (activeTab.value === 'Processing') return props.orders.data.filter(o => o.status === 'processing');
-    if (activeTab.value === 'Completed') return props.orders.data.filter(o => ['shipped', 'delivered'].includes(o.status));
-    return props.orders.data;
+    if (!localOrders.value) return [];
+    if (activeTab.value === 'All Orders') return localOrders.value;
+    if (activeTab.value === 'Pending') return localOrders.value.filter(o => o.status === 'pending');
+    if (activeTab.value === 'Processing') return localOrders.value.filter(o => o.status === 'processing');
+    if (activeTab.value === 'Completed') return localOrders.value.filter(o => ['shipped', 'delivered'].includes(o.status));
+    return localOrders.value;
 });
 
 const pendingCount = computed(() => props.orders.data.filter(o => o.status === 'pending').length);

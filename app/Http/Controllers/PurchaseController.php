@@ -18,7 +18,7 @@ class PurchaseController extends Controller
         $query = Purchase::with(['supplier', 'user', 'items.product'])->latest();
         
         $totalPurchasesRecord = (float) Purchase::sum('total_amount');
-        $purchases = $query->paginate(20);
+        $purchases = $query->paginate(50)->withQueryString();
         $suppliers = Supplier::all();
         $products = Product::all();
 

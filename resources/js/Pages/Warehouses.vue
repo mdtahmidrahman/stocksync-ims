@@ -15,6 +15,7 @@
     <!-- Tabs -->
     <div class="flex space-x-4 border-b border-gray-200 dark:border-gray-700 mb-6">
       <button @click="activeTab = 'locations'" :class="['px-4 py-3 text-sm font-medium border-b-2 transition-colors', activeTab === 'locations' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300']">Locations Overview</button>
+      <button @click="activeTab = 'matrix'" :class="['px-4 py-3 text-sm font-medium border-b-2 transition-colors', activeTab === 'matrix' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300']">Stock Matrix</button>
       <button @click="activeTab = 'transfers'" :class="['px-4 py-3 text-sm font-medium border-b-2 transition-colors', activeTab === 'transfers' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300']">Transfer Board</button>
     </div>
 
@@ -82,6 +83,84 @@
                 <div class="bg-primary-500 h-1.5 rounded-full transition-all duration-500" :style="{ width: `${wh.capacity_used}%` }"></div>
               </div>
             </div>
+
+            <button @click="openViewStockModal(wh)" class="mt-3 w-full py-2 px-3 bg-gray-50 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-950/40 text-primary-600 dark:text-primary-400 border border-gray-200 dark:border-gray-700 hover:border-primary-300 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              View Warehouse Stock ({{ wh.products?.length || 0 }} items)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Matrix View -->
+    <div v-if="activeTab === 'matrix'" class="space-y-6">
+      <!-- Filters Toolbar -->
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
+        <div class="relative w-full sm:w-72">
+          <input v-model="matrixSearch" type="text" placeholder="Search product or SKU..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-black text-gray-900 dark:text-white" />
+          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <select v-model="matrixWarehouseFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:ring-primary-500">
+            <option value="">All Warehouse Locations</option>
+            <option v-for="wh in warehouses" :key="wh.id" :value="wh.id">{{ wh.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Inventory Matrix Table -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div class="overflow-x-auto max-h-[600px] overflow-y-auto" @scroll="handleMatrixScroll">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 sticky top-0 z-10 backdrop-blur-md">
+              <tr>
+                <th class="p-4 font-semibold">Product Name</th>
+                <th class="p-4 font-semibold">SKU</th>
+                <th class="p-4 font-semibold">Warehouse Location</th>
+                <th class="p-4 font-semibold text-center">In-Stock Quantity</th>
+                <th class="p-4 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              <tr v-for="item in displayedMatrixItems" :key="item.key" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                <td class="p-4">
+                  <div class="font-bold text-gray-900 dark:text-white">{{ item.product_name }}</div>
+                  <div class="text-xs text-gray-400 mt-0.5">{{ item.category_name }}</div>
+                </td>
+                <td class="p-4 font-mono text-xs text-gray-600 dark:text-gray-400">{{ item.sku }}</td>
+                <td class="p-4">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40">
+                    {{ item.warehouse_name }}
+                  </span>
+                </td>
+                <td class="p-4 text-center">
+                  <span :class="['inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold', item.quantity > 5 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40' : item.quantity > 0 ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40' : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-800/40']">
+                    {{ item.quantity }} units
+                  </span>
+                </td>
+                <td class="p-4 text-right">
+                  <button @click="quickTransfer(item)" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">
+                    Transfer Stock &rarr;
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="filteredMatrixItems.length === 0">
+                <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">No warehouse stock matches your search criteria.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Scrollable Chunk Pagination Footer -->
+        <div v-if="filteredMatrixItems.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            Showing <span class="font-bold text-gray-900 dark:text-white">{{ displayedMatrixItems.length }}</span> of <span class="font-bold text-gray-900 dark:text-white">{{ filteredMatrixItems.length }}</span> items
+          </div>
+
+          <div v-if="isMatrixLoadingMore" class="text-xs font-semibold text-primary-600 dark:text-primary-400 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            Loading next 50 items...
           </div>
         </div>
       </div>
@@ -309,6 +388,58 @@
         </div>
       </template>
     </Modal>
+    <!-- View Warehouse Inventory Breakdown Modal -->
+    <Modal :show="showViewStockModal" @close="showViewStockModal = false">
+      <template #title>
+        Stock Breakdown: {{ selectedWarehouseForStock?.name }}
+      </template>
+      <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <div class="relative">
+          <input v-model="stockModalSearch" type="text" placeholder="Search items in this warehouse..." class="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-black text-gray-900 dark:text-white" />
+          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <table class="w-full text-left text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            <tr>
+              <th class="p-3 font-semibold">Product</th>
+              <th class="p-3 font-semibold">SKU</th>
+              <th class="p-3 font-semibold text-center">In Stock</th>
+              <th class="p-3 font-semibold text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tr v-for="p in filteredWarehouseProducts" :key="p.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/30">
+              <td class="p-3 font-semibold text-gray-900 dark:text-white">
+                {{ p.name }}
+                <div class="text-[10px] text-gray-400 font-normal" v-if="p.category?.name">{{ p.category.name }}</div>
+              </td>
+              <td class="p-3 text-xs text-gray-400 font-mono">{{ p.sku }}</td>
+              <td class="p-3 text-center">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+                  {{ p.pivot?.quantity || 0 }} units
+                </span>
+              </td>
+              <td class="p-3 text-right">
+                <button @click="quickTransferFromWarehouse(selectedWarehouseForStock, p)" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">
+                  Transfer &rarr;
+                </button>
+              </td>
+            </tr>
+            <tr v-if="!filteredWarehouseProducts || filteredWarehouseProducts.length === 0">
+              <td colspan="4" class="p-6 text-center text-gray-400 italic">No matching products recorded in this warehouse.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <template #footer>
+        <div class="flex justify-end w-full">
+          <button @click="showViewStockModal = false" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold text-xs rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            Close
+          </button>
+        </div>
+      </template>
+    </Modal>
+
     <!-- Delete Confirmation Modal -->
     <ConfirmDeleteModal 
       :show="showDeleteModal" 
@@ -370,6 +501,108 @@ const showEditModal = ref(false);
 const showTransferModal = ref(false);
 const activeTab = ref('locations');
 const editingWarehouseId = ref(null);
+
+// Stock Matrix & View Inventory State with 50-by-50 Chunk Pagination
+const matrixSearch = ref('');
+const matrixWarehouseFilter = ref('');
+const matrixDisplayLimit = ref(50);
+const isMatrixLoadingMore = ref(false);
+
+const showViewStockModal = ref(false);
+const selectedWarehouseForStock = ref(null);
+const stockModalSearch = ref('');
+
+watch([matrixSearch, matrixWarehouseFilter], () => {
+    matrixDisplayLimit.value = 50;
+});
+
+const openViewStockModal = (wh) => {
+    selectedWarehouseForStock.value = wh;
+    stockModalSearch.value = '';
+    showViewStockModal.value = true;
+};
+
+const filteredWarehouseProducts = computed(() => {
+    if (!selectedWarehouseForStock.value || !selectedWarehouseForStock.value.products) return [];
+    const searchVal = stockModalSearch.value.toLowerCase().trim();
+    if (!searchVal) return selectedWarehouseForStock.value.products;
+    return selectedWarehouseForStock.value.products.filter(p => 
+        (p.name && p.name.toLowerCase().includes(searchVal)) ||
+        (p.sku && p.sku.toLowerCase().includes(searchVal)) ||
+        (p.category && p.category.name && p.category.name.toLowerCase().includes(searchVal))
+    );
+});
+
+const filteredMatrixItems = computed(() => {
+    const list = [];
+    props.warehouses.forEach(wh => {
+        if (matrixWarehouseFilter.value && wh.id != matrixWarehouseFilter.value) return;
+        if (wh.products) {
+            wh.products.forEach(p => {
+                list.push({
+                    key: `${wh.id}-${p.id}`,
+                    warehouse_id: wh.id,
+                    warehouse_name: wh.name,
+                    product_id: p.id,
+                    product_name: p.name,
+                    sku: p.sku || 'N/A',
+                    category_name: p.category?.name || 'Uncategorized',
+                    quantity: p.pivot?.quantity || 0
+                });
+            });
+        }
+    });
+
+    const searchVal = matrixSearch.value.toLowerCase().trim();
+    if (!searchVal) return list;
+
+    return list.filter(item => 
+        item.product_name.toLowerCase().includes(searchVal) ||
+        item.sku.toLowerCase().includes(searchVal) ||
+        item.warehouse_name.toLowerCase().includes(searchVal) ||
+        item.category_name.toLowerCase().includes(searchVal)
+    );
+});
+
+const displayedMatrixItems = computed(() => {
+    return filteredMatrixItems.value.slice(0, matrixDisplayLimit.value);
+});
+
+const hasMoreMatrixItems = computed(() => {
+    return matrixDisplayLimit.value < filteredMatrixItems.value.length;
+});
+
+const loadNextMatrixChunk = () => {
+    if (hasMoreMatrixItems.value && !isMatrixLoadingMore.value) {
+        isMatrixLoadingMore.value = true;
+        setTimeout(() => {
+            matrixDisplayLimit.value += 50;
+            isMatrixLoadingMore.value = false;
+        }, 250);
+    }
+};
+
+const handleMatrixScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 120) {
+        loadNextMatrixChunk();
+    }
+};
+
+const quickTransfer = (item) => {
+    transferForm.source_warehouse_id = item.warehouse_id;
+    transferForm.product_id = item.product_id;
+    transferForm.quantity = 1;
+    showTransferModal.value = true;
+};
+
+const quickTransferFromWarehouse = (wh, product) => {
+    showViewStockModal.value = false;
+    transferForm.source_warehouse_id = wh.id;
+    transferForm.product_id = product.id;
+    transferForm.quantity = 1;
+    showTransferModal.value = true;
+};
 
 const addForm = useForm({
     name: '',

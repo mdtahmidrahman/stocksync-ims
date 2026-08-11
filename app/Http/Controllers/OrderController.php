@@ -20,7 +20,8 @@ class OrderController extends Controller
     {
         $orders = Order::with(['customer', 'items.product', 'payments'])
             ->latest()
-            ->paginate(10);
+            ->paginate(50)
+            ->withQueryString();
             
         return Inertia::render('Orders', [
             'orders' => $orders,

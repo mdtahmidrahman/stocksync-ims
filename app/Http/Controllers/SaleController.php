@@ -20,7 +20,7 @@ class SaleController extends Controller
         $query = Sale::with(['customer', 'user', 'items.product'])->latest();
         
         $totalSalesRecord = (float) Sale::sum('total_amount');
-        $sales = $query->paginate(20);
+        $sales = $query->paginate(50)->withQueryString();
         $customers = Customer::all();
         $products = Product::all();
 

@@ -72,9 +72,15 @@
             </tr>
           </tbody>
         </table>
+        <div ref="loadMoreTarget" class="h-4"></div>
       </div>
-      
-      <div ref="loadMoreTarget" class="h-4"></div>
+
+      <!-- Scrollable Chunk Pagination Footer -->
+      <div v-if="localCustomers && localCustomers.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+        <div class="text-xs text-gray-500 dark:text-gray-400">
+          Showing <span class="font-bold text-gray-900 dark:text-white">{{ localCustomers.length }}</span> of <span class="font-bold text-gray-900 dark:text-white">{{ props.customers?.total || localCustomers.length }}</span> customers
+        </div>
+      </div>
     </div>
 
     <!-- Add Customer Modal -->
