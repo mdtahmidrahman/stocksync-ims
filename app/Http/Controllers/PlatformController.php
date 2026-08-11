@@ -28,6 +28,37 @@ class PlatformController extends Controller
         $totalProducts = Product::withoutGlobalScopes()->count();
         $openTickets = \App\Models\SupportTicket::withoutGlobalScopes()->where('status', 'open')->count();
         
+        // Financial & Subscription Data
+        $totalMrr = Company::sum('mrr');
+        $activeSubscriptions = Company::where('subscription_status', 'active')->count();
+        
+        $planDistribution = [
+            'free' => Company::where('subscription_tier', 'free')->count(),
+            'basic' => Company::where('subscription_tier', 'basic')->count(),
+            'pro' => Company::where('subscription_tier', 'pro')->count(),
+        ];
+
+        // Authentic growth data for the chart (last 30 days)
+        $thirtyDaysAgo = now()->subDays(29)->startOfDay();
+        $companiesGrowth = Company::where('created_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->groupBy('date')
+            ->pluck('count', 'date');
+
+        $labels = [];
+        $series = [];
+
+        for ($i = 29; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $labels[] = now()->subDays($i)->format('M d');
+            $series[] = $companiesGrowth->get($date) ?? 0;
+        }
+
+        $growthData = [
+            'labels' => $labels,
+            'series' => $series,
+        ];
+        
         $recentCompanies = Company::latest()->take(5)->get();
 
         return inertia('SuperAdminDashboard', [
@@ -36,6 +67,12 @@ class PlatformController extends Controller
                 'total_users' => $totalUsers,
                 'total_products' => $totalProducts,
                 'open_tickets' => $openTickets,
+                'total_mrr' => $totalMrr,
+                'active_subscriptions' => $activeSubscriptions,
+            ],
+            'charts' => [
+                'plan_distribution' => $planDistribution,
+                'growth' => $growthData,
             ],
             'recent_companies' => $recentCompanies
         ]);

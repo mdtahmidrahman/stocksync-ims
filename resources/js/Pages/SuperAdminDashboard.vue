@@ -16,7 +16,18 @@
     </div>
 
     <!-- Metrics Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 transition-colors min-w-0">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total MRR">Total MRR</p>
+            <div class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">${{ parseFloat(metrics.total_mrr).toLocaleString() }}</div>
+          </div>
+        </div>
+      </div>
       <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 transition-colors min-w-0">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -45,9 +56,54 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Products Tracked">Total Products Tracked</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate" title="Total Products Tracked">Products Tracked</p>
             <AutoFitText :value="metrics.total_products" default-class="text-xl sm:text-2xl font-bold" custom-class="text-gray-900 dark:text-white" />
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Subscription Distribution -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plan Distribution</h3>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600 dark:text-gray-400 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400"></span> Free</span>
+            <span class="font-bold text-gray-900 dark:text-white">{{ charts?.plan_distribution?.free || 0 }}</span>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-gray-400 h-2 rounded-full" :style="`width: ${(charts?.plan_distribution?.free / Math.max(1, metrics.total_companies)) * 100}%`"></div>
+          </div>
+          
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600 dark:text-gray-400 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Basic</span>
+            <span class="font-bold text-gray-900 dark:text-white">{{ charts?.plan_distribution?.basic || 0 }}</span>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-blue-500 h-2 rounded-full" :style="`width: ${(charts?.plan_distribution?.basic / Math.max(1, metrics.total_companies)) * 100}%`"></div>
+          </div>
+
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600 dark:text-gray-400 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Pro</span>
+            <span class="font-bold text-gray-900 dark:text-white">{{ charts?.plan_distribution?.pro || 0 }}</span>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-purple-500 h-2 rounded-full" :style="`width: ${(charts?.plan_distribution?.pro / Math.max(1, metrics.total_companies)) * 100}%`"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Growth Chart -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:col-span-2 flex flex-col">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Platform Growth (Last 30 Days)</h3>
+        <div class="flex-1 flex items-end justify-between gap-1 h-48 mt-auto border-b border-gray-100 dark:border-gray-800 pb-2">
+           <div v-for="(val, idx) in charts?.growth?.series" :key="idx" class="w-full bg-primary-500/80 hover:bg-primary-600 rounded-t-sm transition-all group relative" :style="`height: ${(val / 100) * 100}%`">
+              <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                 {{ val }} - {{ charts?.growth?.labels[idx] }}
+              </div>
+           </div>
         </div>
       </div>
     </div>
@@ -118,44 +174,53 @@
 
 <script setup>
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
-import AppLayout from '../Layouts/AppLayout.vue';
-import AutoFitText from '../Components/AutoFitText.vue';
-import Modal from '../Components/Modal.vue';
-import { formatDate } from '../Composables/useDate';
+import { useForm, Head } from '@inertiajs/vue3';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import Modal from '@/Components/Modal.vue';
+import AutoFitText from '@/Components/AutoFitText.vue';
 
-defineProps({
+const props = defineProps({
     metrics: Object,
+    charts: Object,
     recent_companies: Array
 });
 
 const showCreateModal = ref(false);
+const error = ref(null);
 const companyName = ref('');
 const adminName = ref('');
 const adminEmail = ref('');
-const error = ref('');
+
+const form = useForm({
+    company_name: '',
+    admin_name: '',
+    admin_email: '',
+});
 
 const handleCreateCompany = () => {
-  error.value = '';
-  if (!companyName.value || !adminName.value || !adminEmail.value) {
-    error.value = 'Please fill out all fields.';
-    return;
-  }
+    error.value = null;
+    form.company_name = companyName.value;
+    form.admin_name = adminName.value;
+    form.admin_email = adminEmail.value;
 
-  router.post('/platform/companies', {
-    company_name: companyName.value,
-    admin_name: adminName.value,
-    admin_email: adminEmail.value,
-  }, {
-    onSuccess: () => {
-      showCreateModal.value = false;
-      companyName.value = '';
-      adminName.value = '';
-      adminEmail.value = '';
-    },
-    onError: (errs) => {
-      error.value = Object.values(errs)[0] || 'Failed to create company.';
-    }
-  });
+    form.post('/platform/companies', {
+        preserveScroll: true,
+        onSuccess: () => {
+            showCreateModal.value = false;
+            companyName.value = '';
+            adminName.value = '';
+            adminEmail.value = '';
+        },
+        onError: (err) => {
+            error.value = Object.values(err)[0];
+        }
+    });
+};
+
+const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
 };
 </script>
