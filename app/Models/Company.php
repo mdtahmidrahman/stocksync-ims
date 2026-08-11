@@ -16,6 +16,12 @@ class Company extends Model
         'address',
         'is_active',
         'currency',
+        'timezone',
+        'logo_path',
+        'pos_tax_rate',
+        'pos_receipt_footer',
+        'printer_type',
+        'auto_print_receipt',
     ];
 
     /**

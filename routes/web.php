@@ -96,7 +96,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/invoices/sale/{sale}', [InvoiceController::class, 'saleInvoice'])->name('invoice.sale');
     Route::get('/invoices/order/{order}', [InvoiceController::class, 'orderInvoice'])->name('invoice.order');
-
+    
     Route::get('/inventory', [InventoryController::class, 'index'])->middleware('role:admin|manager|staff');
     Route::post('/inventory/adjust', [InventoryController::class, 'adjust'])->middleware('role:admin|manager');
     Route::get('/inventory/history/{product}', [InventoryController::class, 'history'])->middleware('role:admin|manager|staff');
@@ -113,9 +113,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('role:admin|manager');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin|manager');
+    Route::get('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup')->middleware('role:admin|manager');
+    Route::post('/settings/restore', [SettingsController::class, 'restore'])->name('settings.restore')->middleware('role:admin|manager');
 
     Route::get('/support', [SupportController::class, 'index']);
     Route::post('/support', [SupportController::class, 'store']);
+    Route::post('/support/{ticket}/reply', [SupportController::class, 'reply']);
+    Route::put('/support/{ticket}/status', [SupportController::class, 'updateStatus']);
 
     Route::get('/sales', [SaleController::class, 'index'])->middleware('role:admin|manager|staff');
     Route::post('/sales', [SaleController::class, 'store'])->middleware('role:admin|manager|staff');
