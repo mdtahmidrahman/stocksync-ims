@@ -121,7 +121,7 @@
                   </button>
                 </template>
                 <template #content="{ close }">
-                  <a href="#" v-for="loc in ['All Locations', 'Central Distribution Hub', 'West Coast Storage', 'East Coast Fulfillment']" :key="loc" @click.prevent="newLocation = loc; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="newLocation === loc ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ loc }}</a>
+                  <a href="#" v-for="loc in availableLocations" :key="loc" @click.prevent="newLocation = loc; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="newLocation === loc ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ loc }}</a>
                 </template>
               </Dropdown>
             </div>
@@ -130,7 +130,7 @@
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Permissions Preview</h4>
             <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1 list-disc list-inside">
               <li>Select a role above to view granted permissions.</li>
-              <li>Users will receive an email invitation to set their password.</li>
+              <li>Users will receive an email invitation via SMTP to set up their account.</li>
             </ul>
           </div>
         </div>
@@ -167,6 +167,20 @@
               </template>
             </Dropdown>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Location</label>
+            <Dropdown align="left" width="full" fullWidth>
+              <template #trigger>
+                <button type="button" class="flex justify-between items-center w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm transition-colors text-left min-h-[38px]">
+                  {{ editLocation }}
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+              </template>
+              <template #content="{ close }">
+                <a href="#" v-for="loc in availableLocations" :key="loc" @click.prevent="editLocation = loc; close()" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="editLocation === loc ? 'text-primary-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">{{ loc }}</a>
+              </template>
+            </Dropdown>
+          </div>
         </div>
       </template>
       <template #footer>
@@ -194,9 +208,8 @@
 
 <script setup>
 import AppLayout from '../Layouts/AppLayout.vue';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import axios from 'axios';
 import Modal from '../Components/Modal.vue';
 import ConfirmDeleteModal from '../Components/ConfirmDeleteModal.vue';
 import Dropdown from '../Components/Dropdown.vue';
@@ -205,7 +218,19 @@ const props = defineProps({
     team: {
         type: Array,
         default: () => []
+    },
+    warehouses: {
+        type: Array,
+        default: () => []
     }
+});
+
+const availableLocations = computed(() => {
+    const locs = ['All Locations'];
+    (props.warehouses || []).forEach(w => {
+        if (w.name && !locs.includes(w.name)) locs.push(w.name);
+    });
+    return locs;
 });
 
 const showAddModal = ref(false);
@@ -216,11 +241,12 @@ const filterRole = ref('All Roles');
 const newRole = ref('');
 const newEmail = ref('');
 const newName = ref('');
-const newLocation = ref('All Locations'); // Placeholder for now
+const newLocation = ref('All Locations');
 
 // Edit Form
 const editingUser = ref(null);
 const editRole = ref('');
+const editLocation = ref('All Locations');
 const editError = ref('');
 const isEditing = ref(false);
 
@@ -232,7 +258,7 @@ const formatTeam = (teamData) => {
     return (teamData || []).map(u => ({
         ...u,
         initials: u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
-        location: 'HQ',
+        location: u.location || 'All Locations',
         roleName: u.role === 'admin' ? 'Company Admin' : (u.role === 'manager' ? 'Manager' : 'Staff')
     }));
 };
@@ -243,10 +269,6 @@ watch(() => props.team, (newTeam) => {
     users.value = formatTeam(newTeam);
 }, { deep: true, immediate: true });
 
-const fetchTeam = () => {
-    router.reload({ only: ['team'] });
-};
-
 const handleInvite = async () => {
     error.value = '';
     
@@ -255,22 +277,21 @@ const handleInvite = async () => {
         return;
     }
 
-    // Map UI role to backend role enum
     const backendRole = newRole.value === 'Manager' ? 'manager' : 'staff';
 
-    isInviting.value = true;
     isInviting.value = true;
     router.post('/team', {
         name: newName.value,
         email: newEmail.value,
-        role: backendRole
+        role: backendRole,
+        location: newLocation.value,
     }, {
         onSuccess: () => {
             showAddModal.value = false;
-            // Reset form
             newName.value = '';
             newEmail.value = '';
             newRole.value = '';
+            newLocation.value = 'All Locations';
         },
         onError: (errors) => {
             error.value = errors.message || 'Failed to invite user.';
@@ -279,7 +300,6 @@ const handleInvite = async () => {
             isInviting.value = false;
         }
     });
-
 };
 
 const openEditModal = (user) => {
@@ -290,6 +310,7 @@ const openEditModal = (user) => {
     
     editingUser.value = { ...user };
     editRole.value = user.role === 'manager' ? 'Manager' : 'Staff';
+    editLocation.value = user.location || 'All Locations';
     editError.value = '';
     showEditModal.value = true;
 };
@@ -305,7 +326,8 @@ const handleEdit = async () => {
     editError.value = '';
 
     router.put(`/team/${editingUser.value.id}`, {
-        role: backendRole
+        role: backendRole,
+        location: editLocation.value,
     }, {
         onSuccess: () => {
             showEditModal.value = false;

@@ -2,10 +2,17 @@
   <AppLayout>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-      <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Platform Overview</h1>
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        Super Admin View
+      <div>
+        <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Platform Overview</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Super Admin View</p>
       </div>
+      <button 
+        @click="showCreateModal = true" 
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors shrink-0"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Register Company & Invite Admin
+      </button>
     </div>
 
     <!-- Metrics Cards -->
@@ -78,17 +85,77 @@
         </table>
       </div>
     </div>
+
+    <!-- Create Company Modal -->
+    <Modal :show="showCreateModal" :scrollable="false" @close="showCreateModal = false" @save="handleCreateCompany">
+      <template #title>Register Company Account & Send SMTP Invite</template>
+      <template #body>
+        <div class="space-y-4">
+          <div v-if="error" class="p-3 text-xs font-medium rounded-xl bg-red-50 text-red-600 border border-red-100">
+             {{ error }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name</label>
+            <input type="text" v-model="companyName" placeholder="e.g. Apex Tech Ltd" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Admin Name</label>
+            <input type="text" v-model="adminName" placeholder="e.g. Rahman Hossain" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Admin Email</label>
+            <input type="email" v-model="adminEmail" placeholder="admin@apextech.com" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 sm:text-sm" />
+          </div>
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900 text-xs text-blue-700 dark:text-blue-300">
+            An automated SMTP invitation email with login credentials and account access link will be dispatched instantly to the admin's email address.
+          </div>
+        </div>
+      </template>
+    </Modal>
   </div>
   </AppLayout>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 import AutoFitText from '../Components/AutoFitText.vue';
+import Modal from '../Components/Modal.vue';
 import { formatDate } from '../Composables/useDate';
 
 defineProps({
     metrics: Object,
     recent_companies: Array
 });
+
+const showCreateModal = ref(false);
+const companyName = ref('');
+const adminName = ref('');
+const adminEmail = ref('');
+const error = ref('');
+
+const handleCreateCompany = () => {
+  error.value = '';
+  if (!companyName.value || !adminName.value || !adminEmail.value) {
+    error.value = 'Please fill out all fields.';
+    return;
+  }
+
+  router.post('/platform/companies', {
+    company_name: companyName.value,
+    admin_name: adminName.value,
+    admin_email: adminEmail.value,
+  }, {
+    onSuccess: () => {
+      showCreateModal.value = false;
+      companyName.value = '';
+      adminName.value = '';
+      adminEmail.value = '';
+    },
+    onError: (errs) => {
+      error.value = Object.values(errs)[0] || 'Failed to create company.';
+    }
+  });
+};
 </script>

@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Warehouse;
 use App\Models\AuditLog;
+use App\Mail\UserInvitationMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Http\Requests\StoreTeamMemberRequest;
@@ -17,14 +20,17 @@ class TeamController extends Controller
      */
     public function index()
     {
-        // The TenantScope automatically filters users by the current user's company_id
+        // The TenantScope automatically filters users and warehouses by company_id
         $users = User::all()->map(function ($user) {
             $user->last_login_human = $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never logged in';
             return $user;
         });
+
+        $warehouses = Warehouse::select('id', 'name')->get();
         
         return Inertia::render('Roles', [
-            'team' => $users
+            'team' => $users,
+            'warehouses' => $warehouses,
         ]);
     }
 
@@ -38,22 +44,39 @@ class TeamController extends Controller
             return redirect()->back()->with('error', 'Unauthorized. Only admins can manage the team.');
         }
 
+        $rawPassword = Str::random(10);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt(Str::random(16)),
+            'password' => bcrypt($rawPassword),
             'company_id' => Auth::user()->company_id,
             'role' => $request->role,
+            'location' => $request->location ?? 'All Locations',
         ]);
 
         $user->assignRole($request->role);
 
+        // Send Invitation Email via SMTP
+        try {
+            $company = Auth::user()->company;
+            $companyName = $company ? $company->name : 'StockSync IMS';
+            Mail::to($user->email)->send(new UserInvitationMail(
+                $user, 
+                $companyName, 
+                url('/login'), 
+                $rawPassword
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send SMTP invite email: ' . $e->getMessage());
+        }
+
         AuditLog::record(
             'Team Member Added',
-            "Added team member '{$user->name}' ({$user->email}) with role '{$user->role}'."
+            "Added team member '{$user->name}' ({$user->email}) with role '{$user->role}' at location '{$user->location}'."
         );
 
-        return redirect()->back()->with('success', 'Team member added successfully.');
+        return redirect()->back()->with('success', 'Team member invited successfully. Invitation sent to email.');
     }
 
     /**
@@ -76,6 +99,7 @@ class TeamController extends Controller
 
         $user->update([
             'role' => $request->role,
+            'location' => $request->location ?? $user->location ?? 'All Locations',
         ]);
 
         $user->syncRoles([$request->role]);

@@ -54,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
     Route::get('/platform', [PlatformController::class, 'dashboardMetrics'])->middleware('role:super_admin');
+    Route::post('/platform/companies', [PlatformController::class, 'storeCompany'])->middleware('role:super_admin');
 
     // Products (Web / Inertia)
     Route::get('/products/export', [ProductController::class, 'export'])->middleware('role:admin|manager');

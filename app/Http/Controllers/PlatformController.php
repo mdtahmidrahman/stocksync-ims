@@ -38,4 +38,51 @@ class PlatformController extends Controller
             'recent_companies' => $recentCompanies
         ]);
     }
+
+    /**
+     * Create a new company account & send admin invitation via SMTP.
+     */
+    public function storeCompany(Request $request)
+    {
+        if (!Auth::user()->isSuperAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'company_name' => 'required|string|max:255',
+            'admin_name' => 'required|string|max:255',
+            'admin_email' => 'required|email|unique:users,email',
+        ]);
+
+        $company = Company::create([
+            'name' => $request->company_name,
+        ]);
+
+        $rawPassword = \Illuminate\Support\Str::random(10);
+
+        $user = User::create([
+            'name' => $request->admin_name,
+            'email' => $request->admin_email,
+            'password' => bcrypt($rawPassword),
+            'company_id' => $company->id,
+            'role' => 'admin',
+            'location' => 'All Locations',
+        ]);
+
+        $user->assignRole('admin');
+
+        // Send invitation email via SMTP
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\UserInvitationMail(
+                $user,
+                $company->name,
+                url('/login'),
+                $rawPassword
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send SMTP company invite email: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', "Company '{$company->name}' created and admin invitation sent via email.");
+    }
 }
