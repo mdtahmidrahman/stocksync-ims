@@ -130,7 +130,7 @@ class DashboardController extends Controller
             return [
                 'type' => 'purchase',
                 'title' => 'Purchase Order Created',
-                'description' => "PO {$purchase->purchase_number} created for " . ($purchase->supplier->name ?? 'Vendor'),
+                'description' => "PO {$purchase->reference_number} created for " . ($purchase->supplier->name ?? 'Vendor'),
                 'time' => $purchase->created_at->diffForHumans(),
                 'created_at' => $purchase->created_at
             ];

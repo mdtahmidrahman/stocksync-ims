@@ -253,7 +253,7 @@ class DemoDataSeeder extends Seeder
                 'company_id' => $company->id,
                 'supplier_id' => $sup->id,
                 'warehouse_id' => $wh->id,
-                'purchase_number' => 'PUR-' . $purchaseDate->format('Ym') . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'reference_number' => 'PUR-' . $purchaseDate->format('Ym') . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'status' => ($i % 5 === 0) ? 'pending' : (($i % 9 === 0) ? 'cancelled' : 'received'),
                 'total_amount' => 0,
                 'created_at' => $purchaseDate,

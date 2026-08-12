@@ -13,6 +13,7 @@ class Purchase extends Model
         'company_id',
         'supplier_id',
         'user_id',
+        'warehouse_id',
         'reference_number',
         'status',
         'total_amount',
