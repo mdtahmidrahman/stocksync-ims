@@ -21,8 +21,8 @@ class NotificationController extends Controller
                 // Check if notification already exists recently (in last 12 hours)
                 $exists = $user->notifications()
                     ->where('created_at', '>=', now()->subHours(12))
-                    ->where('data->title', 'Low Stock Alert')
-                    ->where('data->message', 'like', "%{$product->sku}%")
+                    ->where('data', 'like', '%"title":"Low Stock Alert"%')
+                    ->where('data', 'like', "%{$product->sku}%")
                     ->exists();
 
                 if (!$exists) {
