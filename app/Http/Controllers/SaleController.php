@@ -47,7 +47,7 @@ class SaleController extends Controller
             $sale = Sale::create([
                 'customer_id' => $data['customer_id'] ?? null,
                 'user_id' => auth()->id() ?? 1,
-                'warehouse_id' => Warehouse::first()->id ?? 1,
+                'warehouse_id' => Warehouse::first()?->id ?? 1,
                 'invoice_number' => $data['reference_number'] ?? 'INV-' . time(),
                 'status' => 'completed',
                 'total_amount' => $totalAmount,

@@ -45,7 +45,7 @@ class PurchaseController extends Controller
             $purchase = Purchase::create([
                 'supplier_id' => $data['supplier_id'],
                 'user_id' => auth()->id(),
-                'warehouse_id' => \App\Models\Warehouse::first()->id ?? 1,
+                'warehouse_id' => \App\Models\Warehouse::first()?->id ?? 1,
                 'reference_number' => $data['reference_number'] ?? 'PUR-' . time(),
                 'status' => 'received',
                 'total_amount' => $totalAmount,

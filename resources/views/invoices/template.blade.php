@@ -102,7 +102,7 @@
                             </td>
                             
                             <td style="text-align: right;">
-                                <strong style="font-size: 20px; color: #4F46E5;">PURCHASE ORDER INVOICE</strong><br>
+                                <strong style="font-size: 20px; color: #4F46E5;">{{ isset($type) ? strtoupper($type) : 'INVOICE' }}</strong><br>
                                 Invoice #: {{ $number }}<br>
                                 Date: {{ $date }}<br>
                                 Issued By: {{ $cashier }}<br>
@@ -124,13 +124,17 @@
                             </td>
                             
                             <td style="text-align: right;">
-                                <strong>Billed To:</strong><br>
-                                @if($record->customer)
+                                <strong>{{ isset($type) && $type === 'Purchase Order' ? 'Supplier:' : 'Billed To:' }}</strong><br>
+                                @if(isset($type) && $type === 'Purchase Order' && $record->supplier)
+                                    {{ $record->supplier->name }}<br>
+                                    {{ $record->supplier->address ?? 'N/A' }}<br>
+                                    {{ $record->supplier->email ?? $record->supplier->phone ?? 'N/A' }}
+                                @elseif(isset($record->customer))
                                     {{ $record->customer->name }}<br>
                                     {{ $record->customer->address ?? 'N/A' }}<br>
                                     {{ $record->customer->email ?? $record->customer->phone ?? 'N/A' }}
                                 @else
-                                    Walk-in Customer
+                                    Walk-in {{ isset($type) && $type === 'Purchase Order' ? 'Supplier' : 'Customer' }}
                                 @endif
                             </td>
                         </tr>

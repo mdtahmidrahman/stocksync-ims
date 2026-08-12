@@ -73,7 +73,10 @@
       <template #title>Record New Purchase</template>
       <template #body>
         <form @submit.prevent="submitPurchase" id="purchaseForm" class="space-y-6">
-          <!-- Header Info -->
+          <div v-if="addForm.errors.error" class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+              {{ addForm.errors.error }}
+          </div>
+          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Supplier *</label>
